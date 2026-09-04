@@ -34,16 +34,16 @@ Their pre-commit hook scans staged changes for secrets.
 Run:
 
 ```bash
-cd /home/odds/projects/mknext
-./install.sh
-export PATH="$HOME/.local/bin:$PATH"
+curl -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/main/install.sh | bash
 ```
+
+The installer prints a PATH instruction when `~/.local/bin` is not on `PATH`.
 
 Check the install:
 
 ```bash
-mknext --version
-mknext --help
+~/.local/bin/mknext --version
+~/.local/bin/mknext --help
 ```
 
 ## Create an app

@@ -172,6 +172,12 @@ Changesets can version the private package.
 
 ## Installer
 
+The public install command is:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/main/install.sh | bash
+```
+
 `install.sh` copies mknext to a user folder.
 The normal command path is `~/.local/bin/mknext`.
 The program files are under `~/.local/share/mknext`.
