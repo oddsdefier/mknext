@@ -62,6 +62,9 @@ chmod +x "$new_share/bin/mknext"
 if [[ -d "$new_share/templates/.claude/hooks" ]]; then
   chmod +x "$new_share/templates/.claude/hooks/"*.sh 2>/dev/null || true
 fi
+if [[ -d "$new_share/templates/.codex/hooks" ]]; then
+  chmod +x "$new_share/templates/.codex/hooks/"*.sh 2>/dev/null || true
+fi
 
 backup_share="${share_dir}.old.$$"
 rm -rf "$backup_share"

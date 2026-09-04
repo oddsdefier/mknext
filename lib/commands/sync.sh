@@ -73,6 +73,14 @@ run_sync() {
     fi
   fi
 
+  if has_codex_dir "$PWD"; then
+    if ((MKNEXT_SYNC_DRY_RUN == 0)); then
+      install_codex_guard "$PWD"
+    else
+      log_info 'DRY RUN sync: .codex hooks and hooks.json'
+    fi
+  fi
+
   if ((MKNEXT_SYNC_DRY_RUN == 0)); then
     sync_copy_template vercel.json
     sed -i.bak "s/__MKNEXT_REGION__/$MKNEXT_CONFIG_REGION/" "$PWD/vercel.json"

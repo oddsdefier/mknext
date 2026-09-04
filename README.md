@@ -126,6 +126,7 @@ Any failed check makes local CI fail.
 - Supply Chain: Verifies the 24-hour package quarantine delay (`minimumReleaseAge: 1440`)
 - Shell Protection: Verifies or installs Socket.dev safe wrapper aliases (`mknext audit --setup-safe-install`) with automatic shell config backup (`~/.bashrc.mknext.bak` / `~/.zshrc.mknext.bak`)
 - Claude Environment Guard: If `.claude` is present, ensures production environment read hooks are active and non-overwritten
+- Codex Environment Guard: If `.codex` is present, ensures production environment read hooks are active and non-overwritten
 
 ## Protect the GitHub repository
 

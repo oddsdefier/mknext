@@ -182,6 +182,9 @@ run_audit() {
     if has_claude_dir; then
       install_claude_guard
     fi
+    if has_codex_dir; then
+      install_codex_guard
+    fi
     return 0
   fi
 
@@ -252,6 +255,15 @@ run_audit() {
       checks+=('Claude Environment Guard: Production env read hooks active (.claude)')
     else
       problems+=('Claude Environment Guard: .claude directory exists but production env protection is not configured (run "mknext sync" or "mknext audit --setup-safe-install")')
+      failed=1
+    fi
+  fi
+
+  if has_codex_dir; then
+    if verify_codex_guard; then
+      checks+=('Codex Environment Guard: Production env read hooks active (.codex)')
+    else
+      problems+=('Codex Environment Guard: .codex directory exists but production env protection is not configured (run "mknext sync" or "mknext audit --setup-safe-install")')
       failed=1
     fi
   fi

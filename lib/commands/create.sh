@@ -179,6 +179,9 @@ create_pull_request_files() {
   if has_claude_dir "$MKNEXT_CREATE_TARGET"; then
     install_claude_guard "$MKNEXT_CREATE_TARGET"
   fi
+  if has_codex_dir "$MKNEXT_CREATE_TARGET"; then
+    install_codex_guard "$MKNEXT_CREATE_TARGET"
+  fi
 }
 
 create_agents_stub() {

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.codex/hooks/validate-production-env-guard.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|read_file|view_file|file_read|cat|shell_command|exec_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.codex/hooks/block-production-env-read.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

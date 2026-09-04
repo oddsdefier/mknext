@@ -169,4 +169,46 @@ JS
   rm -rf .claude
 )
 
+# Test 11: .codex directory without protection fails audit
+(
+  cd "$test_dir/app"
+  mkdir -p .codex
+  if PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" audit --quiet 2>/dev/null; then
+    printf 'FAIL: audit should fail when .codex exists without env read protection\n' >&2
+    exit 1
+  fi
+)
+
+# Test 12: sync configures .codex hooks and preserves user settings
+(
+  cd "$test_dir/app"
+  printf '{"hooks":{"CustomHook":[]},"customKey":"keepMe"}\n' >.codex/hooks.json
+  PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" sync --quiet
+
+  [[ -x .codex/hooks/block-production-env-read.sh ]] || {
+    printf 'FAIL: .codex block-production-env-read.sh is missing or not executable\n' >&2
+    exit 1
+  }
+  [[ -x .codex/hooks/validate-production-env-guard.sh ]] || {
+    printf 'FAIL: .codex validate-production-env-guard.sh is missing or not executable\n' >&2
+    exit 1
+  }
+
+  grep -q '"keepMe"' .codex/hooks.json || {
+    printf 'FAIL: existing codex hooks were overwritten\n' >&2
+    exit 1
+  }
+  grep -q 'block-production-env-read.sh' .codex/hooks.json || {
+    printf 'FAIL: hook not added to .codex/hooks.json\n' >&2
+    exit 1
+  }
+
+  PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" audit --quiet
+
+  rm -rf .codex
+)
+
 printf 'PASS: mknext audit and security checks pass\n'
