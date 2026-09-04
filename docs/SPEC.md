@@ -107,6 +107,7 @@ Oxlint is the only general linter.
 The local anti-slop plugin runs through Oxlint.
 
 Oxfmt is the only formatter.
+It sorts Tailwind CSS v4 classes in markup and in `cn` and `cva` calls.
 The create command formats the completed app before it exits.
 lint-staged runs Oxfmt on supported staged files.
 
@@ -166,6 +167,8 @@ It writes `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
 It writes `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.
 
 Generated apps use Changesets.
+They use `cn` instead of `clsx` and `tailwind-merge`.
+They install React Grab as a dev dependency.
 The mknext source also uses Changesets.
 
 The source package is private.
@@ -211,5 +214,6 @@ The v1 build must meet these checks:
 15. A generated app audits dependencies in local and remote CI.
 16. A generated app has remote security, quality, and build checks.
 17. A generated app has a script that protects `main` with required checks and reviews.
+18. A generated app uses `cn` and has React Grab as a dev dependency.
 
 - Replace the `AGENTS.md` stub when its full rules are approved.

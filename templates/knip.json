@@ -5,6 +5,6 @@
     "tools/oxlint/anti-slop/**": ["exports", "types"]
   },
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
+  "ignoreDependencies": ["@hugeicons/core-free-icons", "@hugeicons/react", "react-grab"],
   "ignoreBinaries": ["gitleaks", "mknext"]
 }

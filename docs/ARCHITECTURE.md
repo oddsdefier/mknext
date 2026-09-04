@@ -118,9 +118,12 @@ Oxlint owns general lint rules.
 The anti-slop rules are an Oxlint plugin.
 
 Oxfmt owns formatting.
+It sorts Tailwind CSS classes with the generated app stylesheet.
 No Prettier config is generated.
 
 React Doctor owns React checks.
+React Grab provides development element selection.
+The `cn` package owns conditional Tailwind CSS class merging.
 Knip owns unused code and dependency checks.
 Vitest owns tests.
 TypeScript owns type checks.

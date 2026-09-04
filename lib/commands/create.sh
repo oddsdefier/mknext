@@ -79,6 +79,7 @@ create_shadcn_app() {
   copy_template_file pnpm-workspace.yaml
   copy_template_file tsconfig.json
   copy_template_file .gitignore
+  copy_template_file lib/utils.ts
   node "$ROOT_DIR/lib/update-package.mjs" "$MKNEXT_CREATE_TARGET" --package-manager-only
 }
 
@@ -98,11 +99,10 @@ create_minimum_release_config() {
 create_install_pinned_tools() {
   run_in_app pnpm add \
     "class-variance-authority@$CVA_VERSION" \
-    "clsx@$CLSX_VERSION" \
+    "cn@$CN_VERSION" \
     "next@$NEXT_VERSION" \
     "react@$REACT_VERSION" \
-    "react-dom@$REACT_DOM_VERSION" \
-    "tailwind-merge@$TAILWIND_MERGE_VERSION"
+    "react-dom@$REACT_DOM_VERSION"
   run_in_app pnpm add --save-dev \
     "@changesets/cli@$CHANGESETS_VERSION" \
     "@oxlint/plugins@$OXlint_PLUGINS_VERSION" \
@@ -119,6 +119,7 @@ create_install_pinned_tools() {
     "oxfmt@$OXFMT_VERSION" \
     "oxlint@$OXlint_VERSION" \
     "react-doctor@$REACT_DOCTOR_VERSION" \
+    "react-grab@$REACT_GRAB_VERSION" \
     "tailwindcss@$TAILWIND_VERSION" \
     "typescript@$TYPESCRIPT_VERSION" \
     "vitest@$VITEST_VERSION"

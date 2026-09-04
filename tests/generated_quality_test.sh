@@ -23,6 +23,8 @@ const tsconfig = JSON.parse(await readFile(path.join(appDirectory, 'tsconfig.jso
 const complexityConfig = await readFile(path.join(appDirectory, 'oxlint.complexity.config.ts'), 'utf8');
 const doctorConfig = await readFile(path.join(appDirectory, 'doctor.config.ts'), 'utf8');
 const knipConfig = JSON.parse(await readFile(path.join(appDirectory, 'knip.json'), 'utf8'));
+const oxfmtConfig = JSON.parse(await readFile(path.join(appDirectory, '.oxfmtrc.json'), 'utf8'));
+const utils = await readFile(path.join(appDirectory, 'lib/utils.ts'), 'utf8');
 const page = await readFile(path.join(appDirectory, 'app/page.tsx'), 'utf8');
 const gitignore = await readFile(path.join(appDirectory, '.gitignore'), 'utf8');
 
@@ -41,6 +43,22 @@ if (doctorConfig.includes("from 'react-doctor'")) {
 }
 if (packageData.devDependencies.knip !== '6.34.0') throw new Error('Knip is not pinned');
 if (packageData.scripts.knip !== 'knip') throw new Error('Knip command is missing');
+if (oxfmtConfig.sortTailwindcss.stylesheet !== './app/globals.css') {
+  throw new Error('Oxfmt does not use the Tailwind CSS v4 stylesheet');
+}
+if (JSON.stringify(oxfmtConfig.sortTailwindcss.functions) !== JSON.stringify(['cn', 'cva'])) {
+  throw new Error('Oxfmt does not sort classes in project class helpers');
+}
+if (packageData.dependencies.cn !== '0.2.4') throw new Error('cn is not pinned');
+for (const dependency of ['clsx', 'tailwind-merge']) {
+  if (dependency in packageData.dependencies || dependency in packageData.devDependencies) {
+    throw new Error(`${dependency} was not replaced by cn`);
+  }
+}
+if (packageData.devDependencies['react-grab'] !== '0.2.0') {
+  throw new Error('React Grab is not a pinned dev dependency');
+}
+if (utils !== "export { cn } from 'cn';\n") throw new Error('the cn utility does not use the cn package');
 if (!knipConfig.ignoreBinaries.includes('mknext')) throw new Error('Knip config is missing');
 if (knipConfig.ignoreExportsUsedInFile !== true) {
   throw new Error('Knip reports shadcn variants that are used in their own files');
@@ -48,6 +66,7 @@ if (knipConfig.ignoreExportsUsedInFile !== true) {
 if (JSON.stringify(knipConfig.ignoreDependencies) !== JSON.stringify([
   '@hugeicons/core-free-icons',
   '@hugeicons/react',
+  'react-grab',
 ])) {
   throw new Error('Knip does not match the unused Hugeicons preset packages');
 }

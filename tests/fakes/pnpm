@@ -50,7 +50,7 @@ if [[ "${1:-}" == 'dlx' && "${2:-}" == 'shadcn@latest' && "${3:-}" == 'init' ]];
   fi
 
   mkdir -p "$project_name/app" "$project_name/lib"
-  printf '{"name":"test-app","private":true,"packageManager":"pnpm@11.6.0","scripts":{"lint":"eslint","format":"prettier --write ."},"dependencies":{"@base-ui/react":"^1.7.0","@hugeicons/core-free-icons":"^4.3.0","@hugeicons/react":"^1.1.10","shadcn":"^4.20.1"},"devDependencies":{"eslint":"^9","eslint-config-next":"16.2.6","prettier":"^3.8.3","prettier-plugin-tailwindcss":"^0.8.0"}}\n' >"$project_name/package.json"
+  printf '{"name":"test-app","private":true,"packageManager":"pnpm@11.6.0","scripts":{"lint":"eslint","format":"prettier --write ."},"dependencies":{"@base-ui/react":"^1.7.0","@hugeicons/core-free-icons":"^4.3.0","@hugeicons/react":"^1.1.10","clsx":"^2.1.1","shadcn":"^4.20.1","tailwind-merge":"^3.6.0"},"devDependencies":{"clsx":"^2.1.1","eslint":"^9","eslint-config-next":"16.2.6","prettier":"^3.8.3","prettier-plugin-tailwindcss":"^0.8.0","tailwind-merge":"^3.6.0"}}\n' >"$project_name/package.json"
   printf 'export default []\n' >"$project_name/eslint.config.mjs"
   printf '{}\n' >"$project_name/.prettierrc"
   printf 'node_modules\n' >"$project_name/.prettierignore"

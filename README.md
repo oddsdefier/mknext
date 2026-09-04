@@ -18,6 +18,7 @@ A generated app uses:
 - Oxfmt
 - Vitest
 - React Doctor
+- React Grab
 - Knip
 - Husky
 - lint-staged
@@ -27,6 +28,9 @@ A generated app uses:
 - A `main` branch protection setup script
 
 Generated apps do not use ESLint or Prettier.
+Oxfmt sorts Tailwind CSS classes in markup and class helper calls.
+The `cn` package merges conditional Tailwind CSS classes.
+React Grab is installed as a development tool.
 Their pre-commit hook scans staged changes for secrets.
 
 ## Install

@@ -5,5 +5,9 @@
   ],
   "printWidth": 100,
   "singleQuote": true,
-  "semi": true
+  "semi": true,
+  "sortTailwindcss": {
+    "stylesheet": "./app/globals.css",
+    "functions": ["cn", "cva"]
+  }
 }
