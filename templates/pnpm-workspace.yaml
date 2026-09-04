@@ -1,0 +1,6 @@
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: false
+
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

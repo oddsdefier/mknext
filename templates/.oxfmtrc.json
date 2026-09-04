@@ -1,0 +1,9 @@
+{
+  "ignorePatterns": [
+    ".next/**",
+    "tools/oxlint/anti-slop/**"
+  ],
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": true
+}

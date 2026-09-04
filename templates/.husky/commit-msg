@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+message_file=$1
+temporary_file="${message_file}.mknext"
+
+sed -E '/^(Co-authored-by|Co-Authored-By):.*(Claude|ChatGPT|Codex|Cursor)/Id; /^(Generated|Written) (by|with) (Claude|ChatGPT|Codex|Cursor)/Id' "$message_file" >"$temporary_file"
+mv "$temporary_file" "$message_file"

@@ -1,0 +1,4 @@
+title = "mknext Gitleaks configuration"
+
+[extend]
+useDefault = true

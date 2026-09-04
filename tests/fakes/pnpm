@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+if [[ -n "${MKNEXT_CHECK_LOG:-}" ]]; then
+  printf 'pnpm %s\n' "$*" >>"$MKNEXT_CHECK_LOG"
+fi
+
+if [[ "${1:-}" == '--version' ]]; then
+  printf '%s\n' "${MKNEXT_FAKE_PNPM_VERSION:-12.3.1}"
+  exit 0
+fi
+
+if [[ "${1:-}" == 'install' && -n "${MKNEXT_EXPECT_PACKAGE_MANAGER:-}" ]]; then
+  package_manager=$(node -p "require('./package.json').packageManager")
+  if [[ "$package_manager" != "$MKNEXT_EXPECT_PACKAGE_MANAGER" ]]; then
+    printf 'wrong package manager before install: %s\n' "$package_manager" >&2
+    exit 1
+  fi
+fi
+
+if [[ "${1:-}" == 'dlx' && "${2:-}" == create-next-app@* ]]; then
+  project_name=$3
+  linter=eslint
+
+  for argument in "$@"; do
+    case "$argument" in
+      --eslint) linter=eslint ;;
+      --no-linter) linter=none ;;
+    esac
+  done
+
+  mkdir -p "$project_name/app"
+  if [[ "$linter" == eslint ]]; then
+    printf '{"name":"test-app","private":true,"packageManager":"pnpm@11.6.0","scripts":{},"dependencies":{},"devDependencies":{"eslint":"9.39.5","eslint-config-next":"16.3.4"}}\n' >"$project_name/package.json"
+    printf 'export default []\n' >"$project_name/eslint.config.mjs"
+  else
+    printf '{"name":"test-app","private":true,"packageManager":"pnpm@11.6.0","scripts":{},"dependencies":{},"devDependencies":{}}\n' >"$project_name/package.json"
+  fi
+  printf 'export default {}\n' >"$project_name/next.config.ts"
+  printf 'allowBuilds:\n  sharp: false\n' >"$project_name/pnpm-workspace.yaml"
+  printf 'export default function Page(){return <main>Hello</main>}\n' >"$project_name/app/page.tsx"
+  printf '{"compilerOptions":{"noEmit":true},"include":["next-env.d.ts","**/*.ts","**/*.tsx"]}\n' >"$project_name/tsconfig.json"
+  exit 0
+fi
+
+if [[ "${1:-}" == 'dlx' && "${2:-}" == shadcn@* && "${3:-}" == 'init' ]]; then
+  base=''
+  preset=''
+
+  while (($# > 0)); do
+    case "$1" in
+      --base)
+        base=$2
+        shift 2
+        ;;
+      --preset)
+        preset=$2
+        shift 2
+        ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ "$base" != base || "$preset" != b24 ]]; then
+    printf 'wrong shadcn setup: base=%s preset=%s\n' "$base" "$preset" >&2
+    exit 1
+  fi
+
+  printf '{"style":"base-nova","tailwind":{"config":"","css":"app/globals.css","baseColor":"neutral","cssVariables":true},"rsc":true,"tsx":true,"iconLibrary":"lucide","aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui","lib":"@/lib","hooks":"@/hooks"}}\n' >components.json
+  exit 0
+fi
+
+if [[ "${1:-}" == 'exec' && "${2:-}" == 'changeset' && "${3:-}" == 'init' ]]; then
+  printf 'changeset init must not prompt during create\n' >&2
+  exit 1
+fi
+
+if [[ "${1:-}" == 'exec' && "${2:-}" == 'oxfmt' && "${3:-}" == '--write' ]]; then
+  printf 'export default function Page() { return <main>Hello</main>; }\n' >app/page.tsx
+  exit 0
+fi

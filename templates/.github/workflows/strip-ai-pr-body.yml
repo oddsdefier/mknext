@@ -1,0 +1,29 @@
+name: Clean pull request body
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.pull_request.body ?? '';
+            const cleanBody = body
+              .split('\n')
+              .filter((line) => !/(generated|written) (by|with) (claude|chatgpt|codex|cursor)/i.test(line))
+              .join('\n');
+            if (cleanBody !== body) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                body: cleanBody,
+              });
+            }
