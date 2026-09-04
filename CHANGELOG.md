@@ -1,17 +1,5 @@
 # mknext
 
-## 1.2.0
-
-### Minor Changes
-
-- cff7c24: Add Claude Code production environment guard hooks and settings synchronization to prevent Claude from reading protected `.env` files.
-- 676113d: Add Codex CLI production environment guard hooks and non-destructive `.codex/hooks.json` synchronization.
-- Add unified AGENTS.md template with strict ASD-STE100 terse output style and CLAUDE.md pointing to AGENTS.md.
-
-### Patch Changes
-
-- 8526cc4: Ignore agent scratchpads, draft plans, specs, and temporary docs in generated `.gitignore`.
-
 ## 1.1.0
 
 ### Minor Changes
