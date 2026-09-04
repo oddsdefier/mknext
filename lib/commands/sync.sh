@@ -49,6 +49,13 @@ run_sync() {
     fi
   fi
 
+  sync_copy_template scripts/git-hooks/config.sh
+  sync_copy_template scripts/git-hooks/lib.sh
+  sync_copy_template scripts/git-hooks/commit-msg.sh
+  if ((MKNEXT_SYNC_DRY_RUN == 0)); then
+    chmod +x "$PWD/scripts/git-hooks/commit-msg.sh" 2>/dev/null || true
+  fi
+
   sync_copy_template .husky/pre-commit
   sync_copy_template .husky/commit-msg
   if ((MKNEXT_SYNC_DRY_RUN == 0)); then

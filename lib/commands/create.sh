@@ -159,6 +159,10 @@ create_complexity_gates() {
 }
 
 create_git_hooks() {
+  copy_template_file scripts/git-hooks/config.sh
+  copy_template_file scripts/git-hooks/lib.sh
+  copy_template_file scripts/git-hooks/commit-msg.sh
+  chmod +x "$MKNEXT_CREATE_TARGET/scripts/git-hooks/commit-msg.sh"
   copy_template_file .husky/pre-commit
   copy_template_file .husky/commit-msg
   chmod +x "$MKNEXT_CREATE_TARGET/.husky/pre-commit" "$MKNEXT_CREATE_TARGET/.husky/commit-msg"
