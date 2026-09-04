@@ -46,6 +46,15 @@ Check the install:
 ~/.local/bin/mknext --help
 ```
 
+Update an installed copy:
+
+```bash
+mknext update
+```
+
+The update command downloads and runs the public installer again.
+It keeps the install prefix used by the installed command.
+
 ## Create an app
 
 Preview all steps without file changes:

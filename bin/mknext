@@ -12,9 +12,10 @@ source "$ROOT_DIR/lib/log.sh"
 source "$ROOT_DIR/lib/commands/doctor.sh"
 source "$ROOT_DIR/lib/commands/create.sh"
 source "$ROOT_DIR/lib/commands/ci.sh"
+source "$ROOT_DIR/lib/commands/update.sh"
 
 case "${1:-}" in
-  ''|--*|-h|create|ci|doctor) ;;
+  ''|--*|-h|create|ci|doctor|update) ;;
   *) set -- create --name "$1" "${@:2}" ;;
 esac
 
@@ -25,6 +26,7 @@ Usage:
   mknext create [--name NAME] [options]
   mknext ci [options]
   mknext doctor [options]
+  mknext update
 
 Options:
   --mode MODE    Use autonomous or guided mode.
@@ -139,6 +141,18 @@ case "${1:-}" in
       esac
     done
     run_ci
+    ;;
+  update)
+    shift
+    while (($#)); do
+      case "$1" in
+        --no-color) MKNEXT_NO_COLOR=1; shift ;;
+        --quiet) MKNEXT_QUIET=1; shift ;;
+        --help|-h) print_help; exit 0 ;;
+        *) log_error "unknown option: $1"; exit 2 ;;
+      esac
+    done
+    run_update
     ;;
   *)
     printf 'mknext: command is not implemented: %s\n' "$1" >&2

@@ -45,6 +45,7 @@ cp -R "$SOURCE_DIR/bin" "$SOURCE_DIR/lib" "$SOURCE_DIR/templates" "$share_dir/"
 
 cat >"$bin_dir/mknext" <<EOF
 #!/usr/bin/env bash
+export MKNEXT_INSTALL_PREFIX="\${MKNEXT_INSTALL_PREFIX:-$install_prefix}"
 exec "$share_dir/bin/mknext" "\$@"
 EOF
 chmod +x "$bin_dir/mknext" "$share_dir/bin/mknext"

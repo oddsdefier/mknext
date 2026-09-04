@@ -16,6 +16,7 @@ It uses Bash and pnpm.
 | `create` | Creates a Next.js app. |
 | `ci` | Runs local app checks. |
 | `doctor` | Checks setup and updates direct dependencies. |
+| `update` | Downloads and installs the current mknext main branch. |
 
 ## Exit codes
 
@@ -185,6 +186,10 @@ The program files are under `~/.local/share/mknext`.
 
 The installer can use `MKNEXT_INSTALL_PREFIX` for a test install.
 
+`mknext update` downloads and runs the same public installer.
+It replaces the installed program files with the current main branch.
+It keeps the active install prefix.
+
 ## Acceptance checks
 
 The v1 build must meet these checks:
@@ -207,7 +212,4 @@ The v1 build must meet these checks:
 16. A generated app has remote security, quality, and build checks.
 17. A generated app has a script that protects `main` with required checks and reviews.
 
-## Open items
-
-- Add a self-update command after v1.
 - Replace the `AGENTS.md` stub when its full rules are approved.

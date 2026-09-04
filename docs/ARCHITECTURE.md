@@ -18,6 +18,7 @@ mknext/
       create.sh
       ci.sh
       doctor.sh
+      update.sh
   templates/
   tests/
   scripts/
@@ -46,6 +47,8 @@ That command starts the installed entry point.
 
 The installer downloads the main branch when run through a pipe.
 A local installer uses files from its own source folder.
+The update command runs the public installer again.
+The installed wrapper gives the active install prefix to the update command.
 
 ## Config path
 
