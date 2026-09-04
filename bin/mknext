@@ -29,6 +29,7 @@ Usage:
 Options:
   --mode MODE    Use autonomous or guided mode.
   --ci TARGET    Select the CI target.
+  --preset CODE  Set the shadcn preset code.
   --region NAME  Set the Vercel region.
   --yes          Accept default answers.
   --dry-run      Print create steps without file changes.
@@ -97,6 +98,11 @@ case "${1:-}" in
         --ci)
           (($# >= 2)) || { log_error '--ci needs a value'; exit 2; }
           MKNEXT_CONFIG_CI=$2
+          shift 2
+          ;;
+        --preset)
+          (($# >= 2)) || { log_error '--preset needs a value'; exit 2; }
+          MKNEXT_CONFIG_PRESET=$2
           shift 2
           ;;
         --region)

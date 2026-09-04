@@ -20,6 +20,6 @@ if [[ ! -f "$test_dir/short-app/.mknext" ]]; then
   exit 1
 fi
 
-rg -q '^DRY RUN 20/20 ' <<<"$dry_run_output"
+rg -q '^DRY RUN 19/19 ' <<<"$dry_run_output"
 
 printf 'PASS: project name starts the create command\n'

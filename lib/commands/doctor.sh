@@ -41,6 +41,7 @@ run_doctor() {
   printf 'install: %s\n' "$ROOT_DIR"
   printf 'mode: %s\n' "$MKNEXT_CONFIG_MODE"
   printf 'ci: %s\n' "$MKNEXT_CONFIG_CI"
+  printf 'preset: %s\n' "$MKNEXT_CONFIG_PRESET"
   printf 'region: %s\n' "$MKNEXT_CONFIG_REGION"
   printf 'status: %s\n' "$status"
 

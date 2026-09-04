@@ -60,17 +60,21 @@ create_app_directory() {
   mkdir -p "$(dirname "$MKNEXT_CREATE_TARGET")"
 }
 
-create_next_app() {
-  pnpm dlx "create-next-app@$CREATE_NEXT_APP_VERSION" "$MKNEXT_CREATE_TARGET" \
-    --typescript \
-    --tailwind \
-    --no-linter \
-    --app \
-    --import-alias '@/*' \
-    --react-compiler \
-    --use-pnpm \
-    --skip-install \
-    --yes
+create_shadcn_app() {
+  (
+    cd "$(dirname "$MKNEXT_CREATE_TARGET")"
+    PNPM_CONFIG_MINIMUM_RELEASE_AGE=1440 \
+      PNPM_CONFIG_MINIMUM_RELEASE_AGE_STRICT=false \
+      pnpm dlx shadcn@latest init \
+      --preset "$MKNEXT_CONFIG_PRESET" \
+      --template next \
+      --name "$(basename "$MKNEXT_CREATE_TARGET")" \
+      --yes
+  )
+  rm -f \
+    "$MKNEXT_CREATE_TARGET/eslint.config.mjs" \
+    "$MKNEXT_CREATE_TARGET/.prettierignore" \
+    "$MKNEXT_CREATE_TARGET/.prettierrc"
   copy_template_file next.config.ts
   copy_template_file pnpm-workspace.yaml
   copy_template_file tsconfig.json
@@ -79,9 +83,10 @@ create_next_app() {
 }
 
 create_install_base_dependencies() {
-  printf 'ci=%s\nmode=%s\nregion=%s\n' \
+  printf 'ci=%s\nmode=%s\npreset=%s\nregion=%s\n' \
     "$MKNEXT_CONFIG_CI" \
     "$MKNEXT_CONFIG_MODE" \
+    "$MKNEXT_CONFIG_PRESET" \
     "$MKNEXT_CONFIG_REGION" >"$MKNEXT_CREATE_TARGET/.mknext"
   run_in_app pnpm install
 }
@@ -118,11 +123,6 @@ create_install_pinned_tools() {
     "typescript@$TYPESCRIPT_VERSION" \
     "vitest@$VITEST_VERSION"
   node "$ROOT_DIR/lib/update-package.mjs" "$MKNEXT_CREATE_TARGET"
-}
-
-create_shadcn() {
-  run_in_app pnpm dlx "shadcn@$SHADCN_VERSION" init --base base --preset b67ek3WsVs --yes
-  copy_template_file lib/utils.ts
 }
 
 create_oxlint() {
@@ -218,11 +218,11 @@ run_create_step() {
   local action=$3
 
   if ((MKNEXT_CREATE_DRY_RUN == 1)); then
-    printf 'DRY RUN %02d/20 %s\n' "$number" "$title"
+    printf 'DRY RUN %02d/19 %s\n' "$number" "$title"
     return 0
   fi
 
-  printf 'STEP %02d/20 %s\n' "$number" "$title"
+  printf 'STEP %02d/19 %s\n' "$number" "$title"
   "$action"
 }
 
@@ -238,21 +238,20 @@ run_create() {
   run_create_step 1 "Resolve project name: $project_name" create_resolve_name
   run_create_step 2 'Ensure pnpm is available' create_ensure_pnpm
   run_create_step 3 'Create the app directory and marker' create_app_directory
-  run_create_step 4 'Scaffold Next.js' create_next_app
+  run_create_step 4 'Scaffold Next.js with shadcn' create_shadcn_app
   run_create_step 5 'Install base dependencies' create_install_base_dependencies
   run_create_step 6 'Confirm the minimum release config' create_minimum_release_config
   run_create_step 7 'Apply pinned tool versions' create_install_pinned_tools
-  run_create_step 8 'Add shadcn UI' create_shadcn
-  run_create_step 9 'Configure oxlint and anti-slop' create_oxlint
-  run_create_step 10 'Configure oxfmt' create_oxfmt
-  run_create_step 11 'Add the Vitest test harness' create_vitest
-  run_create_step 12 'Add react-doctor' create_react_doctor
-  run_create_step 13 'Add Knip' create_knip
-  run_create_step 14 'Set complexity gates' create_complexity_gates
-  run_create_step 15 'Add Husky and lint-staged' create_git_hooks
-  run_create_step 16 'Add Changesets' create_changesets
-  run_create_step 17 'Add pull request, CI, and security files' create_pull_request_files
-  run_create_step 18 'Write the AGENTS.md stub' create_agents_stub
-  run_create_step 19 'Write the Vercel region' create_vercel_config
-  run_create_step 20 'Configure optional Tailscale origins' create_tailscale
+  run_create_step 8 'Configure oxlint and anti-slop' create_oxlint
+  run_create_step 9 'Configure oxfmt' create_oxfmt
+  run_create_step 10 'Add the Vitest test harness' create_vitest
+  run_create_step 11 'Add react-doctor' create_react_doctor
+  run_create_step 12 'Add Knip' create_knip
+  run_create_step 13 'Set complexity gates' create_complexity_gates
+  run_create_step 14 'Add Husky and lint-staged' create_git_hooks
+  run_create_step 15 'Add Changesets' create_changesets
+  run_create_step 16 'Add pull request, CI, and security files' create_pull_request_files
+  run_create_step 17 'Write the AGENTS.md stub' create_agents_stub
+  run_create_step 18 'Write the Vercel region' create_vercel_config
+  run_create_step 19 'Configure optional Tailscale origins' create_tailscale
 }

@@ -52,6 +52,7 @@ When tool behavior changes, update:
 
 Use exact versions in `versions.env`.
 Check the current package version before a pin change.
+The shadcn scaffold command is the only `@latest` exception.
 
 Keep the minimum release age active.
 Generated apps set `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.

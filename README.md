@@ -60,6 +60,12 @@ Create the app:
 mknext my-app --yes
 ```
 
+Use another shadcn preset:
+
+```bash
+mknext my-app --preset PRESET_CODE --yes
+```
+
 The longer `mknext create --name my-app --yes` form also works.
 
 The command stops if the target path exists.
@@ -111,6 +117,7 @@ The supported keys are:
 
 - `ci`
 - `mode`
+- `preset`
 - `region`
 
 Config order is:
@@ -125,6 +132,7 @@ The defaults are:
 ```text
 ci=local
 mode=autonomous
+preset=b67ek3WsVs
 region=sin1
 ```
 

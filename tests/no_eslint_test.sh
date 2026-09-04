@@ -14,15 +14,15 @@ PATH="$root_dir/tests/fakes:$PATH" \
 
 package_data=$(<"$test_dir/app/package.json")
 case "$package_data" in
-  *'"eslint"'*|*'"eslint-config-next"'*)
-    printf 'FAIL: generated app includes ESLint packages\n' >&2
+  *'"eslint"'*|*'"eslint-config-next"'*|*'"prettier"'*|*'"prettier-plugin-tailwindcss"'*)
+    printf 'FAIL: generated app includes ESLint or Prettier packages\n' >&2
     exit 1
     ;;
 esac
 
-if [[ -e "$test_dir/app/eslint.config.mjs" ]]; then
-  printf 'FAIL: generated app includes an ESLint config\n' >&2
+if [[ -e "$test_dir/app/eslint.config.mjs" || -e "$test_dir/app/.prettierignore" || -e "$test_dir/app/.prettierrc" ]]; then
+  printf 'FAIL: generated app includes an ESLint or Prettier config\n' >&2
   exit 1
 fi
 
-printf 'PASS: generated app uses no ESLint packages or config\n'
+printf 'PASS: generated app uses no ESLint or Prettier packages or config\n'

@@ -42,11 +42,14 @@ if (doctorConfig.includes("from 'react-doctor'")) {
 if (packageData.devDependencies.knip !== '6.34.0') throw new Error('Knip is not pinned');
 if (packageData.scripts.knip !== 'knip') throw new Error('Knip command is missing');
 if (!knipConfig.ignoreBinaries.includes('mknext')) throw new Error('Knip config is missing');
-if (!knipConfig.ignoreDependencies.includes('@hugeicons/react')) {
-  throw new Error('Knip config does not match the shadcn preset');
+if (knipConfig.ignoreExportsUsedInFile !== true) {
+  throw new Error('Knip reports shadcn variants that are used in their own files');
 }
-if (knipConfig.ignoreDependencies.includes('lucide-react')) {
-  throw new Error('Knip config still uses the old shadcn preset');
+if (JSON.stringify(knipConfig.ignoreDependencies) !== JSON.stringify([
+  '@hugeicons/core-free-icons',
+  '@hugeicons/react',
+])) {
+  throw new Error('Knip does not match the unused Hugeicons preset packages');
 }
 if (!gitignore.includes('node_modules')) throw new Error('generated .gitignore is missing');
 if (page !== 'export default function Page() { return <main>Hello</main>; }\n') {

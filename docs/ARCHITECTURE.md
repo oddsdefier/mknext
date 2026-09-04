@@ -63,16 +63,17 @@ Each later source replaces an earlier value.
 `create` resolves one target path.
 It stops when that path exists.
 
-The command runs one shared list of 20 steps.
+The command runs one shared list of 19 steps.
 A dry run prints the same list.
 A dry run does not call the step actions.
 
-The Next.js step passes `--no-linter` and `--skip-install` to `create-next-app`.
-This makes the no-ESLint choice explicit.
-The base install runs after mknext writes the pinned package manager and pnpm settings.
+The scaffold step runs `shadcn@latest init` with the Next.js template and the configured preset.
+The command passes the active, non-blocking pnpm release-age settings to the scaffold install.
+It then removes the generated ESLint and Prettier packages and files.
+The base install runs again after mknext writes the pinned package manager and pnpm settings.
 
 Later steps copy Oxlint, anti-slop, Oxfmt, Vitest, React Doctor, Knip, Gitleaks, and GitHub Actions files.
-The shadcn step uses Base UI and preset `b67ek3WsVs`.
+The default shadcn preset is `b67ek3WsVs`. It uses Base UI and Hugeicons.
 The Changesets step copies its config without an interactive command.
 The package update writes matching scripts and exact versions.
 The final create step formats the completed app.

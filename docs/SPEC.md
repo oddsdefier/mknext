@@ -42,6 +42,7 @@ Both modes call the same step functions.
 | `--name NAME` | Sets the new app path. |
 | `--mode MODE` | Sets `autonomous` or `guided`. |
 | `--ci TARGET` | Sets the CI target. Only `local` works in v1. |
+| `--preset CODE` | Sets the shadcn preset code. |
 | `--region REGION` | Sets the Vercel region. |
 | `--yes` | Accepts default answers. |
 | `--dry-run` | Prints create steps without file changes. |
@@ -57,7 +58,7 @@ The longer `mknext create --name PROJECT [options]` form also works.
 User config is at `~/.config/mknext/config`.
 Project config is in `.mknext`.
 
-The supported keys are `ci`, `mode`, and `region`.
+The supported keys are `ci`, `mode`, `preset`, and `region`.
 
 The config order is:
 
@@ -66,36 +67,35 @@ The config order is:
 3. User config
 4. Built-in defaults
 
-The defaults are `ci=local`, `mode=autonomous`, and `region=sin1`.
+The defaults are `ci=local`, `mode=autonomous`, `preset=b67ek3WsVs`, and `region=sin1`.
 
 ## Create steps
 
-`create` runs these 20 steps in order:
+`create` runs these 19 steps in order:
 
 1. Resolve the app name and target path.
 2. Check pnpm. Install the pinned pnpm version when corepack is available.
 3. Create the target parent folder.
-4. Run pinned `create-next-app` with TypeScript, no ESLint, and no package install.
+4. Run `pnpm dlx shadcn@latest init --preset CODE --template next` to create the Next.js app and add shadcn/ui.
 5. Write `.mknext` and run the base install.
 6. Keep the minimum release age active and non-blocking.
 7. Install pinned packages and write package scripts.
-8. Add shadcn/ui with Base UI and preset `b67ek3WsVs`.
-9. Add Oxlint and anti-slop rules.
-10. Add Oxfmt.
-11. Add Vitest and a sample test.
-12. Add React Doctor.
-13. Add Knip.
-14. Add Oxlint complexity checks.
-15. Add Husky, staged Gitleaks scanning, and lint-staged.
-16. Add Changesets.
-17. Add pull request files, remote CI, Gitleaks config, security docs, and the branch protection script.
-18. Add the `AGENTS.md` stub.
-19. Add `vercel.json` with the selected region.
-20. Offer Tailscale setup in guided mode and format the completed app.
+8. Add Oxlint and anti-slop rules.
+9. Add Oxfmt.
+10. Add Vitest and a sample test.
+11. Add React Doctor.
+12. Add Knip.
+13. Add Oxlint complexity checks.
+14. Add Husky, staged Gitleaks scanning, and lint-staged.
+15. Add Changesets.
+16. Add pull request files, remote CI, Gitleaks config, security docs, and the branch protection script.
+17. Add the `AGENTS.md` stub.
+18. Add `vercel.json` with the selected region.
+19. Offer Tailscale setup in guided mode and format the completed app.
 
 The generated app uses Next.js App Router.
 It enables React Compiler.
-It uses Tailwind CSS and shadcn/ui with Base UI.
+It uses Tailwind CSS and shadcn/ui. The default preset uses Base UI and Hugeicons.
 
 The generated app does not use ESLint.
 The generated app does not use Prettier.
@@ -158,6 +158,7 @@ It exits with code `1` when a check fails.
 
 `versions.env` is the source for pinned versions.
 Pinned npm packages do not use `@latest`.
+The shadcn scaffold command is the exception. It uses `shadcn@latest` as part of the requested template command.
 
 `mknext` does not write or change `.npmrc`.
 It writes `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.

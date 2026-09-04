@@ -4,11 +4,7 @@
     "doctor.config.ts": ["files"],
     "tools/oxlint/anti-slop/**": ["exports", "types"]
   },
-  "ignoreDependencies": [
-    "@base-ui/react",
-    "@hugeicons/core-free-icons",
-    "@hugeicons/react",
-    "class-variance-authority"
-  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
   "ignoreBinaries": ["gitleaks", "mknext"]
 }
