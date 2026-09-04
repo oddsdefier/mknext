@@ -176,6 +176,9 @@ create_pull_request_files() {
   copy_template_file docs/SECURITY.md
   copy_template_file scripts/configure-main-protection.sh
   chmod +x "$MKNEXT_CREATE_TARGET/scripts/configure-main-protection.sh"
+  if has_claude_dir "$MKNEXT_CREATE_TARGET"; then
+    install_claude_guard "$MKNEXT_CREATE_TARGET"
+  fi
 }
 
 create_agents_stub() {

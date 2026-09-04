@@ -127,4 +127,46 @@ JS
   rm -rf .next
 )
 
+# Test 9: .claude directory without protection fails audit
+(
+  cd "$test_dir/app"
+  mkdir -p .claude
+  if PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" audit --quiet 2>/dev/null; then
+    printf 'FAIL: audit should fail when .claude exists without env read protection\n' >&2
+    exit 1
+  fi
+)
+
+# Test 10: sync configures .claude hooks and preserves user settings
+(
+  cd "$test_dir/app"
+  printf '{"model":"my-custom-model","customSetting":true}\n' >.claude/settings.local.json
+  PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" sync --quiet
+
+  [[ -x .claude/hooks/block-production-env-read.sh ]] || {
+    printf 'FAIL: block-production-env-read.sh is missing or not executable\n' >&2
+    exit 1
+  }
+  [[ -x .claude/hooks/validate-production-env-guard.sh ]] || {
+    printf 'FAIL: validate-production-env-guard.sh is missing or not executable\n' >&2
+    exit 1
+  }
+
+  grep -q '"my-custom-model"' .claude/settings.local.json || {
+    printf 'FAIL: existing settings were overwritten\n' >&2
+    exit 1
+  }
+  grep -q 'block-production-env-read.sh' .claude/settings.local.json || {
+    printf 'FAIL: hook not added to settings.local.json\n' >&2
+    exit 1
+  }
+
+  PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" audit --quiet
+
+  rm -rf .claude
+)
+
 printf 'PASS: mknext audit and security checks pass\n'

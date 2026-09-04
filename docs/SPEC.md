@@ -156,6 +156,7 @@ It supports `--dry-run` to preview changes without file modifications.
 - Workflow Permissions: Enforces explicit top-level `permissions` in GitHub Actions workflows.
 - Supply Chain Delay: Verifies `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
 - Shell Protection: Checks or installs safe package manager wrappers (`--setup-safe-install`) with automated backup of shell configuration files.
+- Claude Environment Guard: If `.claude` exists, verifies production env read protection hooks are installed and configured.
 
 It exits with code `0` when all security gates pass.
 It exits with code `1` when an issue is detected.

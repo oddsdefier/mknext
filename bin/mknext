@@ -15,6 +15,7 @@ source "$ROOT_DIR/lib/commands/ci.sh"
 source "$ROOT_DIR/lib/commands/update.sh"
 source "$ROOT_DIR/lib/commands/sync.sh"
 source "$ROOT_DIR/lib/commands/audit.sh"
+source "$ROOT_DIR/lib/claude-guard.sh"
 
 for arg in "$@"; do
   case "$arg" in

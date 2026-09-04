@@ -59,6 +59,9 @@ mkdir -p "$new_share"
 cp "$SOURCE_DIR/VERSION" "$SOURCE_DIR/versions.env" "$new_share/"
 cp -R "$SOURCE_DIR/bin" "$SOURCE_DIR/lib" "$SOURCE_DIR/templates" "$new_share/"
 chmod +x "$new_share/bin/mknext"
+if [[ -d "$new_share/templates/.claude/hooks" ]]; then
+  chmod +x "$new_share/templates/.claude/hooks/"*.sh 2>/dev/null || true
+fi
 
 backup_share="${share_dir}.old.$$"
 rm -rf "$backup_share"

@@ -179,6 +179,9 @@ run_audit() {
 
   if ((MKNEXT_AUDIT_SETUP_SAFE == 1)); then
     setup_safe_install_wrapper
+    if has_claude_dir; then
+      install_claude_guard
+    fi
     return 0
   fi
 
@@ -242,6 +245,15 @@ run_audit() {
     suggestions+=('Supply Chain Firewall: Safe wrapper for "pnpm install" is not active')
     suggestions+=('  Run: mknext audit --setup-safe-install')
     suggestions+=('  (Protects pnpm/npm by intercepting packages and blocking malware before install scripts execute)')
+  fi
+
+  if has_claude_dir; then
+    if verify_claude_guard; then
+      checks+=('Claude Environment Guard: Production env read hooks active (.claude)')
+    else
+      problems+=('Claude Environment Guard: .claude directory exists but production env protection is not configured (run "mknext sync" or "mknext audit --setup-safe-install")')
+      failed=1
+    fi
   fi
 
   if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 ]]; then
