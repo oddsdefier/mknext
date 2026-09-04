@@ -20,6 +20,11 @@ if [[ ! -f "$test_dir/short-app/.mknext" ]]; then
   exit 1
 fi
 
+[[ -f "$test_dir/short-app/AGENTS.md" ]]
+[[ -f "$test_dir/short-app/CLAUDE.md" ]]
+grep -q 'ASD-STE100' "$test_dir/short-app/AGENTS.md"
+grep -q '@AGENTS.md' "$test_dir/short-app/CLAUDE.md"
+
 rg -q '^DRY RUN 19/19 ' <<<"$dry_run_output"
 
 printf 'PASS: project name starts the create command\n'

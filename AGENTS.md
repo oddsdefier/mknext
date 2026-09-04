@@ -2,7 +2,7 @@
 
 - Read `CONTEXT.md` when present.
 - Keep changes minimal and focused.
-- Run project validation scripts before completion.
+- Run project validation scripts before completion (`bash tests/*_test.sh`).
 - Do not commit, push, or open pull requests unless requested.
 
 ## Terse Output Style (Mandatory)

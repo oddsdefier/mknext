@@ -186,6 +186,7 @@ create_pull_request_files() {
 
 create_agents_stub() {
   copy_template_file AGENTS.md
+  copy_template_file CLAUDE.md
 }
 
 create_vercel_config() {
