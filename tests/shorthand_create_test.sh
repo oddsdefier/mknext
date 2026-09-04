@@ -25,6 +25,8 @@ fi
 grep -q 'ASD-STE100' "$test_dir/short-app/AGENTS.md"
 grep -q '@AGENTS.md' "$test_dir/short-app/CLAUDE.md"
 [[ -x "$test_dir/short-app/scripts/git-hooks/commit-msg.sh" ]]
+[[ -x "$test_dir/short-app/scripts/git-hooks/pre-push.sh" ]]
+[[ -x "$test_dir/short-app/.husky/pre-push" ]]
 
 rg -q '^DRY RUN 19/19 ' <<<"$dry_run_output"
 

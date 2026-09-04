@@ -19,7 +19,10 @@ install_claude_guard() {
 
   cp "$ROOT_DIR/templates/.claude/hooks/block-production-env-read.sh" "$hooks_dir/"
   cp "$ROOT_DIR/templates/.claude/hooks/validate-production-env-guard.sh" "$hooks_dir/"
-  chmod +x "$hooks_dir/block-production-env-read.sh" "$hooks_dir/validate-production-env-guard.sh" 2>/dev/null || true
+  cp "$ROOT_DIR/templates/.claude/hooks/block-ai-pr-attribution.sh" "$hooks_dir/"
+  chmod +x "$hooks_dir/block-production-env-read.sh" \
+           "$hooks_dir/validate-production-env-guard.sh" \
+           "$hooks_dir/block-ai-pr-attribution.sh" 2>/dev/null || true
 
   node "$ROOT_DIR/lib/merge-claude-settings.mjs" "$settings_file"
 

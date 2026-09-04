@@ -1,0 +1,2 @@
+#!/bin/sh
+sh "$(git rev-parse --show-toplevel)/scripts/git-hooks/pre-push.sh" "$@"
