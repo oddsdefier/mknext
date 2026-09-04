@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ai agent scratchpads, draft plans, and specs
+/plans/
+/plan/
+/spec/
+/specs/
+/scratch/
+*.plan.md
+/docs/**
+!/docs/
+!/docs/SECURITY.md
+

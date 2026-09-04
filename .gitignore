@@ -1,2 +1,11 @@
 node_modules/
 /test/
+
+# ai agent scratchpads, plans, and specs
+/plans/
+/plan/
+/spec/
+/specs/
+/scratch/
+*.plan.md
+

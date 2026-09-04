@@ -78,5 +78,9 @@ NODE
 
 cmp -s "$root_dir/templates/.gitignore" "$test_dir/app/.gitignore"
 rg -q '^/test/$' "$root_dir/.gitignore"
+rg -q '^/plans/$' "$test_dir/app/.gitignore"
+rg -q '^/spec/$' "$test_dir/app/.gitignore"
+rg -q '^/docs/\*\*$' "$test_dir/app/.gitignore"
+rg -q '^!/docs/SECURITY\.md$' "$test_dir/app/.gitignore"
 
 printf 'PASS: generated app quality checks can run\n'

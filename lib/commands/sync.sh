@@ -38,6 +38,7 @@ run_sync() {
   sync_copy_template pnpm-workspace.yaml
   sync_copy_template tsconfig.json
   sync_copy_template lib/utils.ts
+  sync_copy_template .gitignore
 
   if [[ -d "$ROOT_DIR/templates/tools/oxlint/anti-slop" ]]; then
     if ((MKNEXT_SYNC_DRY_RUN == 0)); then
