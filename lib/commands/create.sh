@@ -5,6 +5,8 @@ MKNEXT_CREATE_FORCE=0
 MKNEXT_CREATE_YES=0
 MKNEXT_CREATE_NAME=''
 MKNEXT_CREATE_TARGET=''
+MKNEXT_SET_PRESET=0
+MKNEXT_SET_REGION=0
 
 set -o allexport
 source "$ROOT_DIR/versions.env"
@@ -43,7 +45,7 @@ create_ensure_pnpm() {
   local pnpm_version=''
 
   if command -v pnpm >/dev/null 2>&1; then
-    pnpm_version=$(pnpm --version)
+    pnpm_version=$(pnpm --version 2>/dev/null | tail -n 1 | tr -d '\r')
     if [[ "$pnpm_version" == "$PNPM_VERSION" ]]; then
       return 0
     fi
@@ -61,6 +63,7 @@ create_app_directory() {
 }
 
 create_shadcn_app() {
+  log_info "  → Downloading Next.js template and shadcn preset ($MKNEXT_CONFIG_PRESET)..."
   (
     cd "$(dirname "$MKNEXT_CREATE_TARGET")"
     PNPM_CONFIG_MINIMUM_RELEASE_AGE=1440 \
@@ -84,6 +87,7 @@ create_shadcn_app() {
 }
 
 create_install_base_dependencies() {
+  log_info '  → Resolving workspace packages and creating project marker...'
   printf 'ci=%s\nmode=%s\npreset=%s\nregion=%s\n' \
     "$MKNEXT_CONFIG_CI" \
     "$MKNEXT_CONFIG_MODE" \
@@ -97,6 +101,7 @@ create_minimum_release_config() {
 }
 
 create_install_pinned_tools() {
+  log_info '  → Installing pinned packages (React, Next.js, Oxlint, Oxfmt, Vitest, Knip)...'
   run_in_app pnpm add \
     "class-variance-authority@$CVA_VERSION" \
     "cn@$CN_VERSION" \
@@ -211,30 +216,89 @@ create_tailscale() {
   run_in_app pnpm exec oxfmt --write .
   log_info "Created $MKNEXT_CREATE_TARGET"
   log_info "Next: cd $MKNEXT_CREATE_TARGET && mknext doctor && mknext ci"
+
+  if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 && "${MKNEXT_CREATE_DRY_RUN:-0}" -eq 0 ]]; then
+    ui_success_summary "$MKNEXT_CREATE_TARGET"
+  fi
 }
 
 run_create_step() {
   local number=$1
   local title=$2
   local action=$3
+  local start_time
+  local end_time
+  local duration
 
   if ((MKNEXT_CREATE_DRY_RUN == 1)); then
     printf 'DRY RUN %02d/19 %s\n' "$number" "$title"
     return 0
   fi
 
-  printf 'STEP %02d/19 %s\n' "$number" "$title"
+  if [[ "${MKNEXT_NO_COLOR:-0}" -eq 1 || -n "${NO_COLOR:-}" || ! -t 1 ]]; then
+    printf 'STEP %02d/19 %s\n' "$number" "$title"
+    "$action"
+    return $?
+  fi
+
+  start_time=$SECONDS
+  printf '%s %sSTEP %02d/19%s %s%s%s\n' \
+    "$ICON_STEP" "$C_CYAN" "$number" "$C_RESET" "$C_BOLD" "$title" "$C_RESET"
   "$action"
+  local status=$?
+
+  if ((status == 0)); then
+    end_time=$SECONDS
+    duration=$((end_time - start_time))
+    if ((duration > 0)); then
+      printf '  %s %sDone in %ds%s\n' "$ICON_ARROW" "$C_DIM" "$duration" "$C_RESET"
+    fi
+  fi
+  return "$status"
 }
 
 run_create() {
   local project_name=$MKNEXT_CREATE_NAME
+
+  if [[ ( -t 0 && -t 1 && "$MKNEXT_CREATE_YES" -eq 0 && -z "$project_name" ) || ( "$MKNEXT_CONFIG_MODE" == guided && -t 0 && -t 1 && "$MKNEXT_CREATE_YES" -eq 0 ) ]]; then
+    ui_banner
+
+    if [[ -z "$project_name" ]]; then
+      local default_name="my-app"
+      while true; do
+        ui_prompt "What is your project named?" "$default_name" project_name
+        local target_check
+        case "$project_name" in
+          /*) target_check=${project_name%/} ;;
+          *) target_check="$PWD/${project_name%/}" ;;
+        esac
+        if [[ -e "$target_check" ]]; then
+          log_warn "Target already exists: $target_check. Please choose another name."
+        else
+          break
+        fi
+      done
+    fi
+
+    if [[ "$MKNEXT_CONFIG_MODE" == guided ]]; then
+      if ((MKNEXT_SET_PRESET == 0)); then
+        ui_prompt "shadcn preset code" "$MKNEXT_CONFIG_PRESET" MKNEXT_CONFIG_PRESET
+      fi
+      if ((MKNEXT_SET_REGION == 0)); then
+        ui_prompt "Vercel deployment region" "$MKNEXT_CONFIG_REGION" MKNEXT_CONFIG_REGION
+      fi
+    fi
+  fi
 
   if [[ -z "$project_name" ]]; then
     project_name=$(basename "$PWD")
   fi
 
   MKNEXT_CREATE_NAME=$project_name
+
+  if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 && "$MKNEXT_CREATE_DRY_RUN" -eq 0 ]]; then
+    ui_banner
+  fi
 
   run_create_step 1 "Resolve project name: $project_name" create_resolve_name
   run_create_step 2 'Ensure pnpm is available' create_ensure_pnpm

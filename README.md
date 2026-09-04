@@ -59,6 +59,12 @@ mknext update
 The update command downloads and runs the public installer again.
 It keeps the install prefix used by the installed command.
 
+Synchronize project configuration, workflows, and tool pins:
+
+```bash
+mknext sync
+```
+
 ## Create an app
 
 Preview all steps without file changes:
@@ -90,6 +96,7 @@ Run these commands from the generated app:
 ```bash
 mknext doctor
 mknext ci
+mknext audit
 ```
 
 `doctor` checks the command, Node.js, pnpm, Gitleaks, the project marker, and config.
@@ -108,6 +115,16 @@ It updates direct dependencies to the latest version allowed by pnpm.
 - Gitleaks
 
 Any failed check makes local CI fail.
+
+`audit` runs an automated security gate scan across the project:
+
+- Secret Scanning: Scans for committed secrets via Gitleaks
+- Dependency Audit: Checks for known vulnerabilities using `pnpm audit`
+- Environment Hygiene: Verifies no sensitive `.env*` files are tracked in Git
+- Client Isolation: Ensures server secrets are never referenced in `'use client'` components
+- CI Security: Validates least-privilege workflow permissions in `.github/workflows`
+- Supply Chain: Verifies the 24-hour package quarantine delay (`minimumReleaseAge: 1440`)
+- Shell Protection: Verifies or installs Socket.dev safe wrapper aliases (`mknext audit --setup-safe-install`) with automatic shell config backup (`~/.bashrc.mknext.bak` / `~/.zshrc.mknext.bak`)
 
 ## Protect the GitHub repository
 

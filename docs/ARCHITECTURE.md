@@ -19,6 +19,8 @@ mknext/
       ci.sh
       doctor.sh
       update.sh
+      sync.sh
+      audit.sh
   templates/
   tests/
   scripts/
@@ -111,6 +113,18 @@ The generated setup script can require both jobs on `main` after the GitHub repo
 It checks that Gitleaks is on `PATH`.
 When setup is healthy, it updates direct dependencies through pnpm.
 The update enforces the minimum release age and does not change its config.
+
+## Audit path
+
+`audit` performs automated project-wide security gate checks:
+
+- Gitleaks scans commit history and local directory for plaintext secrets.
+- `pnpm audit` verifies dependency graphs against published CVE advisories.
+- Git environment hygiene ensures `.env*` files are never tracked or committed.
+- Static regex analysis ensures client components marked `'use client'` do not reference sensitive server variables like `DATABASE_URL` or secret keys.
+- CI permissions scanning ensures workflows explicitly define least-privilege permissions.
+- Supply chain verification confirms the 24-hour quarantine delay (`minimumReleaseAge: 1440`).
+- Shell integration with `--setup-safe-install` creates a backup (`.bashrc.mknext.bak` / `.zshrc.mknext.bak`) and injects Socket.dev safe wrappers (`@socketsecurity/cli`) to intercept malware during package installs.
 
 ## Tool boundaries
 

@@ -16,6 +16,7 @@ It uses Bash and pnpm.
 | `create` | Creates a Next.js app. |
 | `ci` | Runs local app checks. |
 | `doctor` | Checks setup and updates direct dependencies. |
+| `sync` | Synchronizes project configuration, workflows, and pins with mknext templates. |
 | `update` | Downloads and installs the current mknext main branch. |
 
 ## Exit codes
@@ -42,7 +43,7 @@ Both modes call the same step functions.
 | `--version` | Shows the version. |
 | `--name NAME` | Sets the new app path. |
 | `--mode MODE` | Sets `autonomous` or `guided`. |
-| `--ci TARGET` | Sets the CI target. Only `local` works in v1. |
+| `--ci TARGET` | Sets the CI target (`local` or `github`). |
 | `--preset CODE` | Sets the shadcn preset code. |
 | `--region REGION` | Sets the Vercel region. |
 | `--yes` | Accepts default answers. |
@@ -118,12 +119,12 @@ React Doctor runs its own React checks.
 Its high-complexity React rule uses the tool's built-in limit.
 mknext does not claim that React Doctor uses the Oxlint limits.
 
-## Local CI
+## CI checks
 
 `mknext ci` requires `.mknext` and `node_modules/.bin`.
-It supports the `local` target.
+It supports the `local` and `github` targets.
 
-It starts these checks in parallel:
+For `local`, it starts these checks in parallel:
 
 1. `oxlint .`
 2. `oxlint -c oxlint.complexity.config.ts .`
@@ -135,7 +136,29 @@ It starts these checks in parallel:
 8. `pnpm audit`
 9. `gitleaks git --redact .`
 
+For `github`, it verifies `.github/workflows/ci.yml` is present and runs the full remote CI parity checks, including `pnpm run build`.
+
 It exits with code `1` when a check fails.
+
+## Sync
+
+`mknext sync` updates an existing mknext project's configuration files, tool settings, Git hooks, security configurations, GitHub Actions workflows, and package script pins to match the installed mknext version.
+It supports `--dry-run` to preview changes without file modifications.
+
+## Audit
+
+`mknext audit` scans an mknext project for security issues and compliance:
+
+- Secret Scanning: Scans repository with Gitleaks.
+- Dependency CVEs: Checks vulnerabilities via `pnpm audit`.
+- Environment Hygiene: Verifies no sensitive `.env*` files are tracked in Git.
+- Client Isolation: Detects unintended server secret exposure in `'use client'` files.
+- Workflow Permissions: Enforces explicit top-level `permissions` in GitHub Actions workflows.
+- Supply Chain Delay: Verifies `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
+- Shell Protection: Checks or installs safe package manager wrappers (`--setup-safe-install`) with automated backup of shell configuration files.
+
+It exits with code `0` when all security gates pass.
+It exits with code `1` when an issue is detected.
 
 ## Doctor
 
@@ -215,5 +238,6 @@ The v1 build must meet these checks:
 16. A generated app has remote security, quality, and build checks.
 17. A generated app has a script that protects `main` with required checks and reviews.
 18. A generated app uses `cn` and has React Grab as a dev dependency.
+19. `mknext audit` verifies secrets, CVEs, env hygiene, client isolation, CI permissions, and supply chain rules, and supports `--setup-safe-install` with shell backups.
 
 - Replace the `AGENTS.md` stub when its full rules are approved.

@@ -13,33 +13,56 @@ source "$ROOT_DIR/lib/commands/doctor.sh"
 source "$ROOT_DIR/lib/commands/create.sh"
 source "$ROOT_DIR/lib/commands/ci.sh"
 source "$ROOT_DIR/lib/commands/update.sh"
+source "$ROOT_DIR/lib/commands/sync.sh"
+source "$ROOT_DIR/lib/commands/audit.sh"
+
+for arg in "$@"; do
+  case "$arg" in
+    --no-color) MKNEXT_NO_COLOR=1 ;;
+    --quiet) MKNEXT_QUIET=1 ;;
+  esac
+done
+init_colors
 
 case "${1:-}" in
-  ''|--*|-h|create|ci|doctor|update) ;;
+  ''|--*|-h|create|ci|doctor|update|sync|audit) ;;
   *) set -- create --name "$1" "${@:2}" ;;
 esac
 
 print_help() {
-  cat <<'EOF'
-Usage:
-  mknext PROJECT [options]
-  mknext create [--name NAME] [options]
-  mknext ci [options]
-  mknext doctor [options]
-  mknext update
+  init_colors
+  cat <<EOF
+${C_BOLD}${C_CYAN}▲ mknext${C_RESET} ${C_DIM}v$(<"$ROOT_DIR/VERSION")${C_RESET} — Production-grade Next.js App Generator
 
-Options:
-  --mode MODE    Use autonomous or guided mode.
-  --ci TARGET    Select the CI target.
-  --preset CODE  Set the shadcn preset code.
-  --region NAME  Set the Vercel region.
-  --yes          Accept default answers.
-  --dry-run      Print create steps without file changes.
-  --force        Reserved. It does not replace targets in v1.
-  --no-color     Turn off color output.
-  --quiet        Show only needed output.
-  --help         Show this help.
-  --version      Show the installed version.
+${C_BOLD}USAGE${C_RESET}
+  ${C_CYAN}mknext${C_RESET} ${C_DIM}<project-name>${C_RESET} [options]
+  ${C_CYAN}mknext create${C_RESET} [--name <name>] [options]
+  ${C_CYAN}mknext ci${C_RESET} [options]
+  ${C_CYAN}mknext doctor${C_RESET} [options]
+  ${C_CYAN}mknext audit${C_RESET} [options]
+  ${C_CYAN}mknext sync${C_RESET} [options]
+  ${C_CYAN}mknext update${C_RESET}
+
+${C_BOLD}COMMANDS${C_RESET}
+  ${C_BOLD}create${C_RESET}       Scaffold a new Next.js app with shadcn, Tailwind, and quality tools
+  ${C_BOLD}ci${C_RESET}           Run local or GitHub CI checks in parallel (lint, format, types, audit)
+  ${C_BOLD}doctor${C_RESET}       Verify setup and update direct dependencies
+  ${C_BOLD}audit${C_RESET}        Run automated security scans (secrets, CVEs, env, supply chain)
+  ${C_BOLD}sync${C_RESET}         Synchronize project configs, workflows, and tool pins
+  ${C_BOLD}update${C_RESET}       Update the mknext CLI to the latest version
+
+${C_BOLD}OPTIONS${C_RESET}
+  ${C_GREEN}--mode${C_RESET} MODE      Use autonomous (default) or guided mode
+  ${C_GREEN}--preset${C_RESET} CODE    Set shadcn preset code (default: b67ek3WsVs)
+  ${C_GREEN}--region${C_RESET} NAME    Set Vercel region (default: sin1)
+  ${C_GREEN}--ci${C_RESET} TARGET      Select CI target (default: local)
+  ${C_GREEN}--yes${C_RESET}            Accept default answers
+  ${C_GREEN}--dry-run${C_RESET}        Print create steps without file changes
+  ${C_GREEN}--force${C_RESET}          Reserved (does not replace targets in v1)
+  ${C_GREEN}--no-color${C_RESET}       Turn off color output
+  ${C_GREEN}--quiet${C_RESET}          Show only needed output
+  ${C_GREEN}--help, -h${C_RESET}       Show this help
+  ${C_GREEN}--version${C_RESET}        Show installed version
 
 Doctor updates direct dependencies to the latest version allowed by pnpm.
 EOF
@@ -49,8 +72,23 @@ case "${1:-}" in
   --version)
     printf 'mknext %s\n' "$(<"$ROOT_DIR/VERSION")"
     ;;
-  --help|-h|'')
+  --help|-h)
     print_help
+    ;;
+  '')
+    if [[ -t 0 && -t 1 ]]; then
+      ui_banner
+      if ui_confirm "No project specified. Would you like to create a new Next.js app now?" "Y"; then
+        load_config
+        run_create
+        exit 0
+      else
+        print_help
+        exit 0
+      fi
+    else
+      print_help
+    fi
     ;;
   doctor)
     shift
@@ -105,11 +143,13 @@ case "${1:-}" in
         --preset)
           (($# >= 2)) || { log_error '--preset needs a value'; exit 2; }
           MKNEXT_CONFIG_PRESET=$2
+          MKNEXT_SET_PRESET=1
           shift 2
           ;;
         --region)
           (($# >= 2)) || { log_error '--region needs a value'; exit 2; }
           MKNEXT_CONFIG_REGION=$2
+          MKNEXT_SET_REGION=1
           shift 2
           ;;
         --yes) MKNEXT_CREATE_YES=1; shift ;;
@@ -153,6 +193,32 @@ case "${1:-}" in
       esac
     done
     run_update
+    ;;
+  sync)
+    shift
+    while (($#)); do
+      case "$1" in
+        --dry-run) MKNEXT_SYNC_DRY_RUN=1; shift ;;
+        --no-color) MKNEXT_NO_COLOR=1; shift ;;
+        --quiet) MKNEXT_QUIET=1; shift ;;
+        --help|-h) print_help; exit 0 ;;
+        *) log_error "unknown option: $1"; exit 2 ;;
+      esac
+    done
+    run_sync
+    ;;
+  audit)
+    shift
+    while (($#)); do
+      case "$1" in
+        --setup-safe-install) MKNEXT_AUDIT_SETUP_SAFE=1; shift ;;
+        --no-color) MKNEXT_NO_COLOR=1; shift ;;
+        --quiet) MKNEXT_QUIET=1; shift ;;
+        --help|-h) print_help; exit 0 ;;
+        *) log_error "unknown option: $1"; exit 2 ;;
+      esac
+    done
+    run_audit
     ;;
   *)
     printf 'mknext: command is not implemented: %s\n' "$1" >&2

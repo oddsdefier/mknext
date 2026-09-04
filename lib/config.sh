@@ -34,7 +34,10 @@ validate_config() {
     *) return 1 ;;
   esac
 
-  [[ -n "$MKNEXT_CONFIG_CI" ]] || return 1
+  case "$MKNEXT_CONFIG_CI" in
+    local|github) ;;
+    *) return 1 ;;
+  esac
   [[ "$MKNEXT_CONFIG_PRESET" =~ ^[A-Za-z0-9]+$ ]] || return 1
   [[ "$MKNEXT_CONFIG_REGION" =~ ^[a-z]{3}[0-9]+$ ]] || return 1
 }
