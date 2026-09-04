@@ -14,4 +14,5 @@ run_update() {
   fi
 
   log_success 'mknext CLI has been successfully updated!'
+  exit 0
 }

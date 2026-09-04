@@ -6,10 +6,22 @@ set -o pipefail
 
 SOURCE_DIR=''
 TEMP_DIR=''
+new_share=''
+backup_share=''
+new_bin=''
 
 cleanup() {
-  if [[ -n "$TEMP_DIR" && -d "$TEMP_DIR" ]]; then
+  if [[ -n "${TEMP_DIR:-}" && -d "$TEMP_DIR" ]]; then
     rm -rf "$TEMP_DIR"
+  fi
+  if [[ -n "${new_share:-}" && -d "$new_share" ]]; then
+    rm -rf "$new_share"
+  fi
+  if [[ -n "${backup_share:-}" && -d "$backup_share" ]]; then
+    rm -rf "$backup_share"
+  fi
+  if [[ -n "${new_bin:-}" && -f "$new_bin" ]]; then
+    rm -f "$new_bin"
   fi
 }
 
@@ -39,16 +51,31 @@ install_prefix=${MKNEXT_INSTALL_PREFIX:-"$HOME/.local"}
 bin_dir="$install_prefix/bin"
 share_dir="$install_prefix/share/mknext"
 
-mkdir -p "$bin_dir" "$share_dir"
-cp "$SOURCE_DIR/VERSION" "$SOURCE_DIR/versions.env" "$share_dir/"
-cp -R "$SOURCE_DIR/bin" "$SOURCE_DIR/lib" "$SOURCE_DIR/templates" "$share_dir/"
+mkdir -p "$bin_dir"
 
-cat >"$bin_dir/mknext" <<EOF
+new_share="${share_dir}.new.$$"
+rm -rf "$new_share"
+mkdir -p "$new_share"
+cp "$SOURCE_DIR/VERSION" "$SOURCE_DIR/versions.env" "$new_share/"
+cp -R "$SOURCE_DIR/bin" "$SOURCE_DIR/lib" "$SOURCE_DIR/templates" "$new_share/"
+chmod +x "$new_share/bin/mknext"
+
+backup_share="${share_dir}.old.$$"
+rm -rf "$backup_share"
+if [[ -d "$share_dir" ]]; then
+  mv "$share_dir" "$backup_share"
+fi
+mv "$new_share" "$share_dir"
+rm -rf "$backup_share"
+
+new_bin="$bin_dir/mknext.tmp.$$"
+cat >"$new_bin" <<EOF
 #!/usr/bin/env bash
 export MKNEXT_INSTALL_PREFIX="\${MKNEXT_INSTALL_PREFIX:-$install_prefix}"
 exec "$share_dir/bin/mknext" "\$@"
 EOF
-chmod +x "$bin_dir/mknext" "$share_dir/bin/mknext"
+chmod +x "$new_bin"
+mv "$new_bin" "$bin_dir/mknext"
 
 printf 'Installed mknext in %s\n' "$bin_dir"
 case ":$PATH:" in
