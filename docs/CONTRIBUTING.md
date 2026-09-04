@@ -55,6 +55,8 @@ Check the current package version before a pin change.
 
 Keep the minimum release age active.
 Generated apps set `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.
+Doctor enforces the minimum release age when it updates direct dependencies.
+Doctor must not change the minimum-release config.
 
 Do not edit a generated lockfile.
 Use a new temporary app for full create tests.
@@ -80,13 +82,12 @@ This command updates `package.json`, the changelog, and `VERSION`.
 
 ## Local checks
 
-Run the shell tests:
+Run all shell tests:
 
 ```bash
-bash tests/changesets_test.sh
-bash tests/no_eslint_test.sh
-bash tests/shorthand_create_test.sh
-bash tests/security_defaults_test.sh
+for test_file in tests/*_test.sh; do
+  bash "$test_file"
+done
 ```
 
 Check Bash syntax:

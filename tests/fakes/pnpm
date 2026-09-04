@@ -40,6 +40,7 @@ if [[ "${1:-}" == 'dlx' && "${2:-}" == create-next-app@* ]]; then
     printf '{"name":"test-app","private":true,"packageManager":"pnpm@11.6.0","scripts":{},"dependencies":{},"devDependencies":{}}\n' >"$project_name/package.json"
   fi
   printf 'export default {}\n' >"$project_name/next.config.ts"
+  printf 'node_modules\n.next\n' >"$project_name/.gitignore"
   printf 'allowBuilds:\n  sharp: false\n' >"$project_name/pnpm-workspace.yaml"
   printf 'export default function Page(){return <main>Hello</main>}\n' >"$project_name/app/page.tsx"
   printf '{"compilerOptions":{"noEmit":true},"include":["next-env.d.ts","**/*.ts","**/*.tsx"]}\n' >"$project_name/tsconfig.json"
@@ -64,12 +65,12 @@ if [[ "${1:-}" == 'dlx' && "${2:-}" == shadcn@* && "${3:-}" == 'init' ]]; then
     esac
   done
 
-  if [[ "$base" != base || "$preset" != b24 ]]; then
+  if [[ "$base" != base || "$preset" != b67ek3WsVs ]]; then
     printf 'wrong shadcn setup: base=%s preset=%s\n' "$base" "$preset" >&2
     exit 1
   fi
 
-  printf '{"style":"base-nova","tailwind":{"config":"","css":"app/globals.css","baseColor":"neutral","cssVariables":true},"rsc":true,"tsx":true,"iconLibrary":"lucide","aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui","lib":"@/lib","hooks":"@/hooks"}}\n' >components.json
+  printf '{"style":"base-nova","tailwind":{"config":"","css":"app/globals.css","baseColor":"neutral","cssVariables":true},"rsc":true,"tsx":true,"iconLibrary":"hugeicons","aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui","lib":"@/lib","hooks":"@/hooks"}}\n' >components.json
   exit 0
 fi
 
@@ -80,5 +81,25 @@ fi
 
 if [[ "${1:-}" == 'exec' && "${2:-}" == 'oxfmt' && "${3:-}" == '--write' ]]; then
   printf 'export default function Page() { return <main>Hello</main>; }\n' >app/page.tsx
+  exit 0
+fi
+
+if [[ "${1:-}" == 'update' ]]; then
+  if [[ "${MKNEXT_FAKE_PNPM_UPDATE_FAIL:-0}" == 1 ]]; then
+    printf 'release-age check rejected the update\n' >&2
+    exit 1
+  fi
+
+  node --input-type=module <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises';
+
+const packageData = JSON.parse(await readFile('package.json', 'utf8'));
+for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+  for (const name of Object.keys(packageData[group] ?? {})) {
+    packageData[group][name] = '99.0.0';
+  }
+}
+await writeFile('package.json', `${JSON.stringify(packageData, null, 2)}\n`);
+NODE
   exit 0
 fi

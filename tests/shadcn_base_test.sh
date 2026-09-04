@@ -16,7 +16,8 @@ MKNEXT_CHECK_LOG="$check_log" \
   PATH="$root_dir/tests/fakes:$PATH" \
   "$root_dir/bin/mknext" create --name "$test_dir/app" --yes --quiet
 
-rg -q '^pnpm dlx shadcn@4.20.1 init --base base --preset b24 --yes$' "$check_log"
+rg -q '^pnpm dlx shadcn@4.20.1 init --base base --preset b67ek3WsVs --yes$' "$check_log"
 rg -q '"style":"base-nova"' "$test_dir/app/components.json"
+rg -q '"iconLibrary":"hugeicons"' "$test_dir/app/components.json"
 
 printf 'PASS: generated app uses the shadcn Base UI preset\n'

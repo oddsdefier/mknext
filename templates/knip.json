@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@6.34.0/schema.json",
+  "ignoreIssues": {
+    "doctor.config.ts": ["files"],
+    "tools/oxlint/anti-slop/**": ["exports", "types"]
+  },
+  "ignoreDependencies": [
+    "@base-ui/react",
+    "@hugeicons/core-free-icons",
+    "@hugeicons/react",
+    "class-variance-authority"
+  ],
+  "ignoreBinaries": ["gitleaks", "mknext"]
+}

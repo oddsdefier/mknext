@@ -35,6 +35,7 @@ run_ci() {
   start_ci_job complexity "$project_bin/oxlint" -c oxlint.complexity.config.ts .
   start_ci_job format "$project_bin/oxfmt" --check .
   start_ci_job react-doctor "$project_bin/react-doctor" --no-score --blocking error
+  start_ci_job knip "$project_bin/knip"
   start_ci_job test "$project_bin/vitest" run
   start_ci_job typecheck pnpm run typecheck
   start_ci_job audit pnpm audit

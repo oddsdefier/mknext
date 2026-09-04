@@ -37,6 +37,8 @@ Options:
   --quiet        Show only needed output.
   --help         Show this help.
   --version      Show the installed version.
+
+Doctor updates direct dependencies to the latest version allowed by pnpm.
 EOF
 }
 

@@ -15,7 +15,7 @@ It uses Bash and pnpm.
 | `mknext PROJECT` | Creates a Next.js app. This is the main form. |
 | `create` | Creates a Next.js app. |
 | `ci` | Runs local app checks. |
-| `doctor` | Checks the command and app setup. |
+| `doctor` | Checks setup and updates direct dependencies. |
 
 ## Exit codes
 
@@ -70,7 +70,7 @@ The defaults are `ci=local`, `mode=autonomous`, and `region=sin1`.
 
 ## Create steps
 
-`create` runs these 19 steps in order:
+`create` runs these 20 steps in order:
 
 1. Resolve the app name and target path.
 2. Check pnpm. Install the pinned pnpm version when corepack is available.
@@ -79,18 +79,19 @@ The defaults are `ci=local`, `mode=autonomous`, and `region=sin1`.
 5. Write `.mknext` and run the base install.
 6. Keep the minimum release age active and non-blocking.
 7. Install pinned packages and write package scripts.
-8. Add shadcn/ui with Base UI and preset `b24`.
+8. Add shadcn/ui with Base UI and preset `b67ek3WsVs`.
 9. Add Oxlint and anti-slop rules.
 10. Add Oxfmt.
 11. Add Vitest and a sample test.
 12. Add React Doctor.
-13. Add Oxlint complexity checks.
-14. Add Husky, staged Gitleaks scanning, and lint-staged.
-15. Add Changesets.
-16. Add pull request files, remote CI, Gitleaks config, security docs, and the branch protection script.
-17. Add the `AGENTS.md` stub.
-18. Add `vercel.json` with the selected region.
-19. Offer Tailscale setup in guided mode and format the completed app.
+13. Add Knip.
+14. Add Oxlint complexity checks.
+15. Add Husky, staged Gitleaks scanning, and lint-staged.
+16. Add Changesets.
+17. Add pull request files, remote CI, Gitleaks config, security docs, and the branch protection script.
+18. Add the `AGENTS.md` stub.
+19. Add `vercel.json` with the selected region.
+20. Offer Tailscale setup in guided mode and format the completed app.
 
 The generated app uses Next.js App Router.
 It enables React Compiler.
@@ -126,10 +127,11 @@ It starts these checks in parallel:
 2. `oxlint -c oxlint.complexity.config.ts .`
 3. `oxfmt --check .`
 4. `react-doctor --no-score --blocking error`
-5. `vitest run`
-6. `next typegen && tsc --noEmit`
-7. `pnpm audit`
-8. `gitleaks git --redact .`
+5. `knip`
+6. `vitest run`
+7. `next typegen && tsc --noEmit`
+8. `pnpm audit`
+9. `gitleaks git --redact .`
 
 It exits with code `1` when a check fails.
 
@@ -142,7 +144,12 @@ It exits with code `1` when a check fails.
 - Gitleaks on `PATH`
 - The `.mknext` marker
 - Valid config values
+- Direct dependency updates through pnpm
 - The mknext version and install path
+
+The update uses exact versions.
+It enforces the pnpm minimum release age.
+It does not change the minimum-release config.
 
 It exits with code `0` when all checks pass.
 It exits with code `1` when a check fails.
@@ -181,19 +188,19 @@ The v1 build must meet these checks:
 4. A generated app has no Prettier package or config.
 5. A generated app has Oxlint, anti-slop, and Oxfmt config.
 6. A generated app has Vitest and React Doctor config.
-7. A generated app has Husky, lint-staged, and Changesets files.
-8. A generated app has `.mknext` and `vercel.json`.
-9. `mknext ci` uses project-local tools.
-10. `mknext doctor` reports setup problems.
-11. A generated app keeps the minimum release age active and non-blocking.
-12. The root Changesets command keeps `package.json` and `VERSION` in sync.
-13. A generated app has Gitleaks config and local secret scanning.
-14. A generated app audits dependencies in local and remote CI.
-15. A generated app has remote security, quality, and build checks.
-16. A generated app has a script that protects `main` with required checks and reviews.
+7. A generated app has Knip config and a Knip CI check.
+8. A generated app has Husky, lint-staged, and Changesets files.
+9. A generated app has `.mknext`, `.gitignore`, and `vercel.json`.
+10. `mknext ci` uses project-local tools.
+11. `mknext doctor` reports setup problems and updates direct dependencies.
+12. A generated app keeps the minimum release age active and non-blocking.
+13. The root Changesets command keeps `package.json` and `VERSION` in sync.
+14. A generated app has Gitleaks config and local secret scanning.
+15. A generated app audits dependencies in local and remote CI.
+16. A generated app has remote security, quality, and build checks.
+17. A generated app has a script that protects `main` with required checks and reviews.
 
 ## Open items
 
-- Confirm the public repository name.
 - Add a self-update command after v1.
 - Replace the `AGENTS.md` stub when its full rules are approved.

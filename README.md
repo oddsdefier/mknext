@@ -18,6 +18,7 @@ A generated app uses:
 - Oxfmt
 - Vitest
 - React Doctor
+- Knip
 - Husky
 - lint-staged
 - Changesets
@@ -73,6 +74,7 @@ mknext ci
 ```
 
 `doctor` checks the command, Node.js, pnpm, Gitleaks, the project marker, and config.
+It updates direct dependencies to the latest version allowed by pnpm.
 
 `ci` runs these project-local tools in parallel:
 
@@ -80,6 +82,7 @@ mknext ci
 - The Oxlint complexity check
 - Oxfmt
 - React Doctor
+- Knip
 - Vitest
 - TypeScript
 - `pnpm audit`
@@ -127,7 +130,7 @@ region=sin1
 
 ## Supply-chain rule
 
-`mknext` does not write or change a minimum-release config.
+`mknext doctor` does not change the minimum-release config.
 pnpm can stop an install when a package is too new.
 Do not bypass that check.
 

@@ -21,6 +21,7 @@ protection_script="$app_dir/scripts/configure-main-protection.sh"
 [[ -x "$protection_script" ]]
 rg -q 'gitleaks git --staged --redact \.' "$app_dir/.husky/pre-commit"
 rg -q 'pnpm audit' "$workflow"
+rg -q 'pnpm knip' "$workflow"
 rg -q 'gitleaks/gitleaks-action@' "$workflow"
 rg -q 'security' "$protection_script"
 rg -q 'quality' "$protection_script"
@@ -31,7 +32,7 @@ rg -q '"audit": "pnpm audit"' "$app_dir/package.json"
 rg -q '"secrets": "gitleaks git --redact \."' "$app_dir/package.json"
 
 mkdir -p "$app_dir/node_modules/.bin" "$test_dir/bin"
-for tool in oxlint oxfmt react-doctor vitest tsc; do
+for tool in knip oxlint oxfmt react-doctor vitest tsc; do
   cp "$root_dir/tests/fakes/check-tool" "$app_dir/node_modules/.bin/$tool"
 done
 cp "$root_dir/tests/fakes/check-tool" "$test_dir/bin/gitleaks"
@@ -48,5 +49,6 @@ check_log="$test_dir/checks.log"
 rg -q '^pnpm audit$' "$check_log"
 rg -q '^pnpm run typecheck$' "$check_log"
 rg -q '^gitleaks git --redact \.$' "$check_log"
+rg -q '^knip $' "$check_log"
 
 printf 'PASS: generated apps include local and remote security gates\n'

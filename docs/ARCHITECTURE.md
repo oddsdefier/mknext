@@ -63,7 +63,7 @@ Each later source replaces an earlier value.
 `create` resolves one target path.
 It stops when that path exists.
 
-The command runs one shared list of 19 steps.
+The command runs one shared list of 20 steps.
 A dry run prints the same list.
 A dry run does not call the step actions.
 
@@ -71,8 +71,8 @@ The Next.js step passes `--no-linter` and `--skip-install` to `create-next-app`.
 This makes the no-ESLint choice explicit.
 The base install runs after mknext writes the pinned package manager and pnpm settings.
 
-Later steps copy Oxlint, anti-slop, Oxfmt, Vitest, React Doctor, Gitleaks, and GitHub Actions files.
-The shadcn step uses Base UI and preset `b24`.
+Later steps copy Oxlint, anti-slop, Oxfmt, Vitest, React Doctor, Knip, Gitleaks, and GitHub Actions files.
+The shadcn step uses Base UI and preset `b67ek3WsVs`.
 The Changesets step copies its config without an interactive command.
 The package update writes matching scripts and exact versions.
 The final create step formats the completed app.
@@ -98,15 +98,15 @@ It can stop a staged secret before the commit exists.
 
 The generated GitHub Actions workflow has two required jobs: `security` and `quality`.
 The security job audits dependencies and scans Git history.
-The quality job runs lint, format, React, test, type, and build checks.
+The quality job runs lint, format, React, Knip, test, type, and build checks.
 The generated setup script can require both jobs on `main` after the GitHub repository exists.
 
 ## Doctor path
 
-`doctor` is read-only.
-It checks the command and current app setup.
+`doctor` checks the command and current app setup.
 It checks that Gitleaks is on `PATH`.
-It does not install or change files.
+When setup is healthy, it updates direct dependencies through pnpm.
+The update enforces the minimum release age and does not change its config.
 
 ## Tool boundaries
 
@@ -117,6 +117,7 @@ Oxfmt owns formatting.
 No Prettier config is generated.
 
 React Doctor owns React checks.
+Knip owns unused code and dependency checks.
 Vitest owns tests.
 TypeScript owns type checks.
 

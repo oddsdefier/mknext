@@ -12,9 +12,14 @@ chmod +x "$root_dir/tests/fakes/pnpm"
 PATH="$root_dir/tests/fakes:$PATH" \
   "$root_dir/bin/mknext" "$test_dir/short-app" --mode autonomous --yes --quiet
 
+dry_run_output=$(PATH="$root_dir/tests/fakes:$PATH" \
+  "$root_dir/bin/mknext" create --name "$test_dir/dry-app" --dry-run --quiet)
+
 if [[ ! -f "$test_dir/short-app/.mknext" ]]; then
   printf 'FAIL: short create form did not create the app\n' >&2
   exit 1
 fi
+
+rg -q '^DRY RUN 20/20 ' <<<"$dry_run_output"
 
 printf 'PASS: project name starts the create command\n'

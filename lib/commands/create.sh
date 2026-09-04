@@ -74,6 +74,7 @@ create_next_app() {
   copy_template_file next.config.ts
   copy_template_file pnpm-workspace.yaml
   copy_template_file tsconfig.json
+  copy_template_file .gitignore
   node "$ROOT_DIR/lib/update-package.mjs" "$MKNEXT_CREATE_TARGET" --package-manager-only
 }
 
@@ -108,6 +109,7 @@ create_install_pinned_tools() {
     "babel-plugin-react-compiler@$REACT_COMPILER_VERSION" \
     "husky@$HUSKY_VERSION" \
     "jsdom@$JSDOM_VERSION" \
+    "knip@$KNIP_VERSION" \
     "lint-staged@$LINT_STAGED_VERSION" \
     "oxfmt@$OXFMT_VERSION" \
     "oxlint@$OXlint_VERSION" \
@@ -119,7 +121,7 @@ create_install_pinned_tools() {
 }
 
 create_shadcn() {
-  run_in_app pnpm dlx "shadcn@$SHADCN_VERSION" init --base base --preset b24 --yes
+  run_in_app pnpm dlx "shadcn@$SHADCN_VERSION" init --base base --preset b67ek3WsVs --yes
   copy_template_file lib/utils.ts
 }
 
@@ -140,6 +142,10 @@ create_vitest() {
 
 create_react_doctor() {
   copy_template_file doctor.config.ts
+}
+
+create_knip() {
+  copy_template_file knip.json
 }
 
 create_complexity_gates() {
@@ -212,11 +218,11 @@ run_create_step() {
   local action=$3
 
   if ((MKNEXT_CREATE_DRY_RUN == 1)); then
-    printf 'DRY RUN %02d/19 %s\n' "$number" "$title"
+    printf 'DRY RUN %02d/20 %s\n' "$number" "$title"
     return 0
   fi
 
-  printf 'STEP %02d/19 %s\n' "$number" "$title"
+  printf 'STEP %02d/20 %s\n' "$number" "$title"
   "$action"
 }
 
@@ -241,11 +247,12 @@ run_create() {
   run_create_step 10 'Configure oxfmt' create_oxfmt
   run_create_step 11 'Add the Vitest test harness' create_vitest
   run_create_step 12 'Add react-doctor' create_react_doctor
-  run_create_step 13 'Set complexity gates' create_complexity_gates
-  run_create_step 14 'Add Husky and lint-staged' create_git_hooks
-  run_create_step 15 'Add Changesets' create_changesets
-  run_create_step 16 'Add pull request, CI, and security files' create_pull_request_files
-  run_create_step 17 'Write the AGENTS.md stub' create_agents_stub
-  run_create_step 18 'Write the Vercel region' create_vercel_config
-  run_create_step 19 'Configure optional Tailscale origins' create_tailscale
+  run_create_step 13 'Add Knip' create_knip
+  run_create_step 14 'Set complexity gates' create_complexity_gates
+  run_create_step 15 'Add Husky and lint-staged' create_git_hooks
+  run_create_step 16 'Add Changesets' create_changesets
+  run_create_step 17 'Add pull request, CI, and security files' create_pull_request_files
+  run_create_step 18 'Write the AGENTS.md stub' create_agents_stub
+  run_create_step 19 'Write the Vercel region' create_vercel_config
+  run_create_step 20 'Configure optional Tailscale origins' create_tailscale
 }

@@ -22,7 +22,9 @@ const packageData = JSON.parse(await readFile(path.join(appDirectory, 'package.j
 const tsconfig = JSON.parse(await readFile(path.join(appDirectory, 'tsconfig.json'), 'utf8'));
 const complexityConfig = await readFile(path.join(appDirectory, 'oxlint.complexity.config.ts'), 'utf8');
 const doctorConfig = await readFile(path.join(appDirectory, 'doctor.config.ts'), 'utf8');
+const knipConfig = JSON.parse(await readFile(path.join(appDirectory, 'knip.json'), 'utf8'));
 const page = await readFile(path.join(appDirectory, 'app/page.tsx'), 'utf8');
+const gitignore = await readFile(path.join(appDirectory, '.gitignore'), 'utf8');
 
 if (packageData.scripts.typecheck !== 'next typegen && tsc --noEmit') {
   throw new Error('typecheck does not generate Next.js types');
@@ -37,9 +39,22 @@ if (!complexityConfig.includes("from './oxlint.config.ts'")) {
 if (doctorConfig.includes("from 'react-doctor'")) {
   throw new Error('React Doctor config uses a missing run-time export');
 }
+if (packageData.devDependencies.knip !== '6.34.0') throw new Error('Knip is not pinned');
+if (packageData.scripts.knip !== 'knip') throw new Error('Knip command is missing');
+if (!knipConfig.ignoreBinaries.includes('mknext')) throw new Error('Knip config is missing');
+if (!knipConfig.ignoreDependencies.includes('@hugeicons/react')) {
+  throw new Error('Knip config does not match the shadcn preset');
+}
+if (knipConfig.ignoreDependencies.includes('lucide-react')) {
+  throw new Error('Knip config still uses the old shadcn preset');
+}
+if (!gitignore.includes('node_modules')) throw new Error('generated .gitignore is missing');
 if (page !== 'export default function Page() { return <main>Hello</main>; }\n') {
   throw new Error('generated app was not formatted');
 }
 NODE
+
+cmp -s "$root_dir/templates/.gitignore" "$test_dir/app/.gitignore"
+rg -q '^/test/$' "$root_dir/.gitignore"
 
 printf 'PASS: generated app quality checks can run\n'

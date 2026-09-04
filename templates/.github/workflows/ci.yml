@@ -53,6 +53,7 @@ jobs:
       - run: pnpm lint:complexity
       - run: pnpm format
       - run: pnpm doctor
+      - run: pnpm knip
       - run: pnpm test:run
       - run: pnpm typecheck
       - run: pnpm build
