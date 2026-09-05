@@ -1,0 +1,45 @@
+name: PR governance
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  template:
+    name: template
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the pull request body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          printf '%s\n' "$PR_BODY" > body.md
+          status=0
+          for section in Summary Validation Risks; do
+            if ! grep -qx "## $section" body.md; then
+              printf 'error: the body is missing the "## %s" heading\n' "$section" >&2
+              status=1
+              continue
+            fi
+            content=$(awk -v want="## $section" '
+              $0 == want { inside = 1; next }
+              /^## / { inside = 0 }
+              inside { print }
+            ' body.md | tr -d '[:space:]')
+            if [ -z "$content" ]; then
+              printf 'error: the "## %s" section is empty. Write N/A - <reason> when it does not apply.\n' "$section" >&2
+              status=1
+            fi
+          done
+          exit "$status"

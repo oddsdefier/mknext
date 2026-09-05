@@ -28,7 +28,7 @@ gh api \
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": ["security", "quality"]
+    "checks": [{ "context": "security" }, { "context": "quality" }]
   },
   "enforce_admins": true,
   "required_pull_request_reviews": {
@@ -42,6 +42,7 @@ gh api \
   "allow_deletions": false,
   "required_conversation_resolution": true
 }
+
 JSON
 
 printf 'Protected main in %s\n' "$repository"

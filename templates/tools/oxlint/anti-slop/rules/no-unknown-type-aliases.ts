@@ -2,6 +2,12 @@ import { defineRule } from "@oxlint/plugins";
 
 import type { ESTree } from "@oxlint/plugins";
 
+import {
+	createTypeEnvironment,
+	resolveTypeAlias,
+	type TypeEnvironment,
+} from "../shared/dictionary-types.ts";
+
 function referencedAliasName(type: ESTree.TSType): string | null {
 	if (type.type === "TSParenthesizedType") return referencedAliasName(type.typeAnnotation);
 	if (type.type !== "TSTypeReference" || type.typeName.type !== "Identifier") return null;
@@ -26,7 +32,7 @@ export const noUnknownTypeAliasesRule = defineRule({
 		},
 	},
 	createOnce(context) {
-		const aliases = new Map<string, ESTree.TSTypeAliasDeclaration>();
+		let environment: TypeEnvironment | null = null;
 
 		const resolvesToUnknown = (type: ESTree.TSType, visited = new Set<string>()): boolean => {
 			if (type.type === "TSUnknownKeyword") return true;
@@ -34,9 +40,10 @@ export const noUnknownTypeAliasesRule = defineRule({
 				return resolvesToUnknown(type.typeAnnotation, visited);
 			const name = referencedAliasName(type);
 			if (name === null || visited.has(name)) return false;
-			const alias = aliases.get(name);
+			if (environment === null) return false;
+			const alias = resolveTypeAlias(name, type, environment);
 			if (
-				alias === undefined ||
+				alias === null ||
 				(alias.typeParameters !== null && alias.typeParameters !== undefined)
 			) {
 				return false;
@@ -48,21 +55,17 @@ export const noUnknownTypeAliasesRule = defineRule({
 
 		return {
 			Program(node) {
-				aliases.clear();
-				for (const statement of node.body) {
-					const declaration =
-						statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
-					if (declaration?.type === "TSTypeAliasDeclaration") {
-						aliases.set(declaration.id.name, declaration);
+				environment = createTypeEnvironment(node);
+				for (const aliases of environment.aliases.values()) {
+					for (const binding of aliases) {
+						const alias = binding.declaration;
+						if (!resolvesToUnknown(alias.typeAnnotation, new Set([alias.id.name]))) continue;
+						context.report({
+							node: alias.id,
+							messageId: "unknownAlias",
+							data: { alias: alias.id.name },
+						});
 					}
-				}
-				for (const alias of aliases.values()) {
-					if (!resolvesToUnknown(alias.typeAnnotation, new Set([alias.id.name]))) continue;
-					context.report({
-						node: alias.id,
-						messageId: "unknownAlias",
-						data: { alias: alias.id.name },
-					});
 				}
 			},
 		};

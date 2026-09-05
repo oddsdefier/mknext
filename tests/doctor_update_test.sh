@@ -28,11 +28,19 @@ packageData.devDependencies.knip = '~1.0.0';
 packageData.optionalDependencies = { 'test-optional': '1.x' };
 await writeFile(packageFile, `${JSON.stringify(packageData, null, 2)}\n`);
 NODE
+cp "$test_dir/app/package.json" "$test_dir/package.before-no-update.json"
 
 (
   cd "$test_dir/app"
   MKNEXT_CHECK_LOG="$check_log" PATH="$test_dir:$root_dir/tests/fakes:$PATH" \
     "$root_dir/bin/mknext" doctor --quiet
+)
+cmp -s "$test_dir/package.before-no-update.json" "$test_dir/app/package.json"
+
+(
+  cd "$test_dir/app"
+  MKNEXT_CHECK_LOG="$check_log" PATH="$test_dir:$root_dir/tests/fakes:$PATH" \
+    "$root_dir/bin/mknext" doctor --update --quiet
 )
 
 cmp -s "$test_dir/pnpm-workspace.before.yaml" "$test_dir/app/pnpm-workspace.yaml"
@@ -46,7 +54,7 @@ if failure_output=$(
   cd "$test_dir/app"
   MKNEXT_CHECK_LOG="$check_log" MKNEXT_FAKE_PNPM_UPDATE_FAIL=1 \
     PATH="$test_dir:$root_dir/tests/fakes:$PATH" \
-    "$root_dir/bin/mknext" doctor --quiet 2>&1
+    "$root_dir/bin/mknext" doctor --update --quiet 2>&1
 ); then
   printf 'FAIL: doctor accepted a rejected dependency update\n' >&2
   exit 1

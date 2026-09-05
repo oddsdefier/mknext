@@ -2,6 +2,12 @@ import { defineRule } from "@oxlint/plugins";
 
 import type { ESTree } from "@oxlint/plugins";
 
+import {
+  createTypeEnvironment,
+  isShadowedTypeName,
+  resolveTypeAlias,
+  type TypeEnvironment,
+} from "../shared/dictionary-types.ts";
 import { lexicalTypeParameterNames } from "../shared/lexical-type-parameters.ts";
 
 type FunctionWithReturnType =
@@ -37,7 +43,7 @@ export const noUnknownReturnsRule = defineRule({
     },
   },
   createOnce(context) {
-    const aliases = new Map<string, ESTree.TSTypeAliasDeclaration>();
+    let environment: TypeEnvironment | null = null;
 
     const resolvesToUnknown = (
       type: ESTree.TSType,
@@ -56,16 +62,19 @@ export const noUnknownReturnsRule = defineRule({
       if (
         type.type === "TSTypeReference" &&
         type.typeName.type === "Identifier" &&
-        (type.typeName.name === "Promise" || type.typeName.name === "PromiseLike")
+        (type.typeName.name === "Promise" || type.typeName.name === "PromiseLike") &&
+        environment !== null &&
+        !isShadowedTypeName(type.typeName.name, type, environment)
       ) {
         const value = type.typeArguments?.params[0];
         return value !== undefined && resolvesToUnknown(value, shadowedAliases, visited);
       }
       const name = referencedAliasName(type);
       if (name === null || visited.has(name) || shadowedAliases.has(name)) return false;
-      const alias = aliases.get(name);
+      if (environment === null) return false;
+      const alias = resolveTypeAlias(name, type, environment);
       if (
-        alias === undefined ||
+        alias === null ||
         (alias.typeParameters !== null && alias.typeParameters !== undefined)
       ) {
         return false;
@@ -91,14 +100,7 @@ export const noUnknownReturnsRule = defineRule({
 
     return {
       Program(node) {
-        aliases.clear();
-        for (const statement of node.body) {
-          const declaration =
-            statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
-          if (declaration?.type === "TSTypeAliasDeclaration") {
-            aliases.set(declaration.id.name, declaration);
-          }
-        }
+        environment = createTypeEnvironment(node);
       },
       ArrowFunctionExpression: checkReturnType,
       FunctionDeclaration: checkReturnType,

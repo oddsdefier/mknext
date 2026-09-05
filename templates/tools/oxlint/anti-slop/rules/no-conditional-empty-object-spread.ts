@@ -10,7 +10,9 @@ function unwrapParentheses(node: ESTree.Expression): ESTree.Expression {
 }
 
 function isEmptyObjectExpression(node: ESTree.Expression): boolean {
-  return node.type === "ObjectExpression" && node.properties.length === 0;
+  let current = node;
+  while (current.type === "ParenthesizedExpression") current = current.expression;
+  return current.type === "ObjectExpression" && current.properties.length === 0;
 }
 
 function isConditionalEmptyObjectSpread(node: ESTree.Expression): boolean {

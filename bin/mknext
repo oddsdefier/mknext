@@ -7,6 +7,10 @@ set -o pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
+set -o allexport
+source "$ROOT_DIR/versions.env"
+set +o allexport
+
 source "$ROOT_DIR/lib/config.sh"
 source "$ROOT_DIR/lib/log.sh"
 source "$ROOT_DIR/lib/commands/doctor.sh"
@@ -66,7 +70,7 @@ ${C_BOLD}OPTIONS${C_RESET}
   ${C_GREEN}--help, -h${C_RESET}       Show this help
   ${C_GREEN}--version${C_RESET}        Show installed version
 
-Doctor updates direct dependencies to the latest version allowed by pnpm.
+Doctor checks direct dependencies. Add --update to update them.
 EOF
 }
 
@@ -106,6 +110,10 @@ case "${1:-}" in
           (($# >= 2)) || { printf 'mknext: --ci needs a value\n' >&2; exit 2; }
           MKNEXT_CONFIG_CI=$2
           shift 2
+          ;;
+        --update)
+          MKNEXT_DOCTOR_UPDATE=1
+          shift
           ;;
         --no-color|--quiet)
           shift

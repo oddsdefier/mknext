@@ -66,7 +66,7 @@ Invalid commit message.
 
    Allowed types:
      feat      - new feature
-     fix       - bug fix
+     fix        - bug fix
      docs      - documentation only
      style     - formatting only
      refactor  - code change that neither fixes a bug nor adds a feature

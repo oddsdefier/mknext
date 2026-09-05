@@ -24,6 +24,12 @@ function parameterAnnotation(parameter: Parameter): ESTree.TSTypeAnnotation | nu
   return parameter.typeAnnotation;
 }
 
+function unwrapType(type: ESTree.TSType): ESTree.TSType {
+  let current = type;
+  while (current.type === "TSParenthesizedType") current = current.typeAnnotation;
+  return current;
+}
+
 function parameterName(parameter: Parameter, sourceText: string): string {
   if (parameter.type === "TSParameterProperty") {
     return parameterName(parameter.parameter, sourceText);
@@ -56,7 +62,8 @@ export const noUnknownParametersRule = defineRule({
     const checkParameters = (node: ParameterOwner) => {
       for (const parameter of node.params) {
         const annotation = parameterAnnotation(parameter);
-        if (annotation?.typeAnnotation.type !== "TSUnknownKeyword") continue;
+        if (annotation === null || annotation === undefined) continue;
+        if (unwrapType(annotation.typeAnnotation).type !== "TSUnknownKeyword") continue;
         const name = parameterName(parameter, context.sourceCode.getText(parameter));
         if (name === "cause") continue;
         context.report({

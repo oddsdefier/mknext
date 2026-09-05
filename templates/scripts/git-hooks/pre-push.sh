@@ -18,9 +18,9 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   zero_sha="0000000000000000000000000000000000000000"
   if [ "$remote_sha" = "$zero_sha" ] || [ -z "$remote_sha" ]; then
     # New branch: check commits not reachable by any remote ref
-    range=$(git rev-list "$local_sha" --not --remotes 2>/dev/null || git rev-list -n 30 "$local_sha")
+    range=$(git rev-list "$local_sha" --not --remotes) || fail "Cannot resolve pushed commit range for $local_ref"
   else
-    range=$(git rev-list "$remote_sha..$local_sha" 2>/dev/null || git rev-list -n 30 "$local_sha")
+    range=$(git rev-list "$remote_sha..$local_sha") || fail "Cannot resolve pushed commit range for $local_ref"
   fi
 
   for commit in $range; do

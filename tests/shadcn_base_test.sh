@@ -19,7 +19,7 @@ MKNEXT_CHECK_LOG="$check_log" \
   PATH="$root_dir/tests/fakes:$PATH" \
   "$root_dir/bin/mknext" create --name "$test_dir/app" --preset customPreset123 --yes --quiet
 
-rg -q '^pnpm dlx shadcn@latest init --preset customPreset123 --template next --name app --yes$' "$check_log"
+rg -q '^pnpm dlx shadcn@\^4.20.1 init --preset customPreset123 --template next --name app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
 if rg -q '^pnpm dlx create-next-app@' "$check_log"; then
   printf 'FAIL: create still calls create-next-app\n' >&2
   exit 1
@@ -33,7 +33,7 @@ MKNEXT_CHECK_LOG="$check_log" \
   PATH="$root_dir/tests/fakes:$PATH" \
   "$root_dir/bin/mknext" create --name "$test_dir/config-app" --yes --quiet
 
-rg -q '^pnpm dlx shadcn@latest init --preset userPreset456 --template next --name config-app --yes$' "$check_log"
+rg -q '^pnpm dlx shadcn@\^4.20.1 init --preset userPreset456 --template next --name config-app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
 rg -q '^preset=userPreset456$' "$test_dir/config-app/.mknext"
 
 printf 'PASS: shadcn scaffolds the app with the configured preset\n'

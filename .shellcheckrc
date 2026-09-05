@@ -1,0 +1,5 @@
+# mknext sources config files at runtime. ShellCheck cannot follow them, so
+# these checks report variables that are set or used in another file.
+disable=SC1090,SC1091,SC2034,SC2154
+# `CDPATH= cd ...` is a deliberate prefix assignment, not a typo.
+disable=SC1007

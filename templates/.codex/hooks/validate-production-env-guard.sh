@@ -5,9 +5,9 @@ project_dir=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 hooks_file="$project_dir/.codex/hooks.json"
 guard_hook="$script_dir/block-production-env-read.sh"
 
-required_commands="jq"
+required_commands="jq realpath"
 if [ "$(uname -s)" = "Linux" ]; then
-  required_commands="jq bwrap socat"
+  required_commands="jq realpath bwrap socat"
 fi
 
 for command_name in $required_commands; do
@@ -40,5 +40,23 @@ done
 result=$(printf '{"tool_input":{"file_path":"%s/.env.example"}}\n' "$project_dir" | "$guard_hook")
 if [ -n "$result" ]; then
   echo "Production environment guard failed. Read hook blocked .env.example." >&2
+  exit 2
+fi
+
+# Codex fires PreToolUse for shell commands only. Test that path, not just file_path.
+for shell_command in \
+  'cat .env.production.local' \
+  'cat /tmp/prod.local.env' \
+  'cp .env.prod.local /tmp/x'; do
+  result=$(printf '{"input":{"command":"%s"}}\n' "$shell_command" | "$guard_hook")
+  if ! printf '%s\n' "$result" | jq -e '.hookSpecificOutput.permissionDecision == "deny" or .decision == "block"' >/dev/null; then
+    echo "Production environment guard failed. Read hook allowed: $shell_command." >&2
+    exit 2
+  fi
+done
+
+result=$(printf '{"input":{"command":"ls -la"}}\n' | "$guard_hook")
+if [ -n "$result" ]; then
+  echo "Production environment guard failed. Read hook blocked a harmless command." >&2
   exit 2
 fi

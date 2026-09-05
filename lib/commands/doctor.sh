@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+MKNEXT_DOCTOR_UPDATE=0
+
 run_doctor() {
   local status=healthy
   local checks=()
@@ -10,7 +12,15 @@ run_doctor() {
     status=unhealthy
     problems+=('node is not on PATH')
   else
-    checks+=("Node.js $(node --version 2>/dev/null || echo 'installed')")
+    local node_version
+    node_version=$(node --version 2>/dev/null || true)
+    if ! node -e 'process.exit(Number(process.version.slice(1).split(".")[0]) < Number(process.argv[1]) ? 1 : 0)' "$NODE_MIN_VERSION"; then
+      printf 'problem: Node.js %s or newer is required\n' "$NODE_MIN_VERSION"
+      status=unhealthy
+      problems+=("Node.js $NODE_MIN_VERSION or newer is required")
+    else
+      checks+=("Node.js $node_version")
+    fi
   fi
 
   if ! command -v pnpm >/dev/null 2>&1; then
@@ -45,7 +55,7 @@ run_doctor() {
     checks+=('Configuration valid')
   fi
 
-  if [[ "$status" == healthy ]]; then
+  if [[ "$status" == healthy && "$MKNEXT_DOCTOR_UPDATE" -eq 1 ]]; then
     if pnpm update --latest --save-exact --config.minimum-release-age-strict=true; then
       printf 'dependencies: updated\n'
       checks+=('Direct dependencies updated')
@@ -54,6 +64,9 @@ run_doctor() {
       status=unhealthy
       problems+=('dependency update failed')
     fi
+  elif [[ "$status" == healthy ]]; then
+    printf 'dependencies: unchanged\n'
+    checks+=('Direct dependencies unchanged')
   fi
 
   if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 ]]; then

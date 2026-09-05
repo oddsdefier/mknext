@@ -1,4 +1,4 @@
-name: CI
+name: Repository tests
 
 on:
   pull_request:
@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  security:
-    name: security
+  tests:
+    name: tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,6 +31,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Check shell scripts
+        run: git ls-files '*.sh' bin/mknext | xargs shellcheck --severity=warning --external-sources
       - name: Audit dependencies
         run: pnpm audit
       - name: Scan Git history for secrets
@@ -38,28 +40,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-
-  quality:
-    name: quality
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Check out the source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install pnpm
-        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
-      - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: 22
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm lint:complexity
-      - run: pnpm format
-      - run: pnpm doctor
-      - run: pnpm knip
-      - run: pnpm test:run
-      - run: pnpm typecheck
-      - run: pnpm build
+      - name: Run shell tests
+        run: pnpm test

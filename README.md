@@ -35,11 +35,16 @@ Their pre-commit hook scans staged changes for secrets.
 
 ## Install
 
-Run:
+Run the pinned installer:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/main/install.sh | bash
+installer=$(mktemp)
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/4fad3f0814cbce114c74a272720236c1784db06c/install.sh -o "$installer"
+bash "$installer"
+rm "$installer"
 ```
+
+The installer clones the newest release tag. Git verifies the content.
 
 The installer prints a PATH instruction when `~/.local/bin` is not on `PATH`.
 
@@ -56,7 +61,8 @@ Update an installed copy:
 mknext update
 ```
 
-The update command downloads and runs the public installer again.
+The update command finds the newest release tag on GitHub.
+It stops when that tag is already installed.
 It keeps the install prefix used by the installed command.
 
 Synchronize project configuration, workflows, and tool pins:
@@ -100,7 +106,7 @@ mknext audit
 ```
 
 `doctor` checks the command, Node.js, pnpm, Gitleaks, the project marker, and config.
-It updates direct dependencies to the latest version allowed by pnpm.
+Use `mknext doctor --update` to update direct dependencies.
 
 `ci` runs these project-local tools in parallel:
 
@@ -125,7 +131,7 @@ Any failed check makes local CI fail.
 - CI Security: Validates least-privilege workflow permissions in `.github/workflows`
 - Supply Chain: Verifies the 24-hour package quarantine delay (`minimumReleaseAge: 1440`)
 - Shell Protection: Verifies or installs Socket.dev safe wrapper aliases (`mknext audit --setup-safe-install`) with automatic shell config backup (`~/.bashrc.mknext.bak` / `~/.zshrc.mknext.bak`)
-- Claude Environment Guard: If `.claude` is present, ensures production environment read hooks are active and non-overwritten
+- Claude Environment Guard: On by default; needs `jq` and `realpath`, plus `bwrap` and `socat` on Linux. Turn it off with `MKNEXT_ENABLE_CLAUDE_GUARD=0`
 - Codex Environment Guard: If `.codex` is present, ensures production environment read hooks are active and non-overwritten
 
 ## Protect the GitHub repository
@@ -191,6 +197,10 @@ pnpm changeset:version
 ```
 
 The version command updates `package.json` and `VERSION`.
+
+A change to `VERSION` on `main` creates the matching `vX.Y.Z` tag.
+`install.sh` and `mknext update` clone the newest tag.
+See [Contributing](docs/CONTRIBUTING.md) for the full release steps.
 
 ## More docs
 

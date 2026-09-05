@@ -24,85 +24,73 @@ check_dependency_cves() {
 
 check_env_hygiene() {
   if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    local tracked_env
-    tracked_env=$(git ls-files .env .env.local .env.production .env.development .env.*.local 2>/dev/null || true)
-    if [[ -n "$tracked_env" ]]; then
-      return 1
-    fi
+    local file basename
+    while IFS= read -r -d '' file; do
+      basename=${file##*/}
+      case "$basename" in
+        .env.example) ;;
+        .env|.env.*) return 1 ;;
+      esac
+    done < <(git ls-files -z 2>/dev/null)
   fi
   return 0
 }
 
 check_client_secret_leaks() {
-  local leaked=0
-  local pattern='process\.env\.(DATABASE_URL|[A-Za-z0-9_]*SECRET[A-Za-z0-9_]*|[A-Za-z0-9_]*PASSWORD[A-Za-z0-9_]*|[A-Za-z0-9_]*PRIVATE_KEY[A-Za-z0-9_]*)'
-  local next_public_secret='NEXT_PUBLIC_[A-Za-z0-9_]*(SECRET|PASSWORD|PRIVATE_KEY|DATABASE_URL)'
+  local file
+  local secret_name='(DATABASE_URL|[A-Za-z0-9_]*(SECRET|PASSWORD|PRIVATE_KEY|TOKEN|API_KEY)[A-Za-z0-9_]*)'
+  local process_env='process[[:space:]]*\.[[:space:]]*env'
+  local env_secret="(${process_env}[[:space:]]*\\.[[:space:]]*$secret_name|${process_env}[[:space:]]*\\[[[:space:]]*['\"]${secret_name}['\"][[:space:]]*\\])"
+  local dynamic_env="${process_env}[[:space:]]*\\[[[:space:]]*[^'\"]"
+  local next_public_secret='NEXT_PUBLIC_[A-Za-z0-9_]*(SECRET|PASSWORD|PRIVATE_KEY|DATABASE_URL|TOKEN|API_KEY)'
 
-  # 1. Scan client components ('use client') for direct server secret references
-  while IFS= read -r file; do
-    [[ -n "$file" ]] || continue
-    if grep -q -E "('use client'|\"use client\")" "$file" 2>/dev/null; then
-      if grep -q -E "$pattern" "$file" 2>/dev/null; then
-        leaked=1
-        break
-      fi
-    fi
-  done < <(find app components lib -type f \( -name "*.tsx" -o -name "*.jsx" -o -name "*.ts" -o -name "*.js" \) 2>/dev/null || true)
-
-  if ((leaked != 0)); then
-    return 1
-  fi
-
-  # 2. Check for NEXT_PUBLIC_ variables containing sensitive terms, which Next.js inlines into browser JS
-  while IFS= read -r file; do
-    [[ -n "$file" ]] || continue
-    if grep -q -E "$next_public_secret" "$file" 2>/dev/null; then
-      leaked=1
-      break
-    fi
-  done < <(find app components lib -type f \( -name "*.tsx" -o -name "*.jsx" -o -name "*.ts" -o -name "*.js" \) 2>/dev/null || true)
-
-  if ((leaked != 0)); then
-    return 1
-  fi
-
-  for env_file in .env .env.local .env.development .env.production .env.example; do
-    if [[ -f "$env_file" ]]; then
-      if grep -q -E "$next_public_secret" "$env_file" 2>/dev/null; then
+  while IFS= read -r -d '' file; do
+    if grep -q -E "(['\"]use client['\"]|$next_public_secret)" "$file" 2>/dev/null; then
+      if grep -q -E "$next_public_secret" "$file" 2>/dev/null; then return 1; fi
+      if grep -q -E "$env_secret|$dynamic_env|\\{[^}]*${secret_name}[^}]*\\}[[:space:]]*=[[:space:]]*$process_env" "$file" 2>/dev/null; then
         return 1
       fi
     fi
-  done
+  done < <(find . -type f \( -name '*.tsx' -o -name '*.jsx' -o -name '*.ts' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) \
+    -not -path './node_modules/*' -not -path './.next/*' -not -path './.git/*' -print0 2>/dev/null)
 
-  # 3. If Next.js has been compiled (.next/static exists), inspect client-side bundles for server secrets
-  if [[ -d .next/static ]]; then
-    if grep -r -q -E "$pattern" .next/static 2>/dev/null; then
-      return 1
-    fi
+  while IFS= read -r -d '' file; do
+    if grep -q -E "$next_public_secret" "$file" 2>/dev/null; then return 1; fi
+  done < <(find . -type f -name '.env*' -not -name '.env.example' -not -path './node_modules/*' -print0 2>/dev/null)
+
+  if [[ -d .next/static ]] && grep -r -q -E "$secret_name|$next_public_secret" .next/static 2>/dev/null; then
+    return 1
   fi
-
   return 0
 }
 
 check_workflow_permissions() {
-  if [[ -d .github/workflows ]]; then
-    for wf in .github/workflows/*.yml .github/workflows/*.yaml; do
-      [[ -f "$wf" ]] || continue
-      if ! grep -q -E '^permissions:' "$wf"; then
-        return 1
-      fi
-    done
-  fi
-  return 0
+  [[ -d .github/workflows ]] || return 0
+  local wf
+  for wf in .github/workflows/*.yml .github/workflows/*.yaml; do
+    [[ -f "$wf" ]] || continue
+    awk '
+      /^[[:space:]]*#/ { next }
+      /^[[:space:]]*$/ { next }
+      $0 ~ /permissions:[[:space:]]*/ && $0 !~ /^permissions:/ { bad=1; next }
+      /^permissions:[[:space:]]*$/ { found=1; block=1; next }
+      /^permissions:[[:space:]]+/ {
+        found=1; value=$0; sub(/^permissions:[[:space:]]*/, "", value)
+        if (value !~ /^[{][[:space:]]*contents:[[:space:]]*(read|none)[[:space:]]*[}][[:space:]]*(#.*)?$/) bad=1
+        next
+      }
+      block && /^[^[:space:]]/ { block=0 }
+      block {
+        if ($0 !~ /^[[:space:]]+(contents|pull-requests):[[:space:]]*(read|none|write)[[:space:]]*(#.*)?$/) bad=1
+      }
+      END { if (!found || bad) exit 1 }
+    ' "$wf" || return 1
+  done
 }
 
 check_supply_chain_delay() {
-  if [[ -f pnpm-workspace.yaml ]]; then
-    grep -q 'minimumReleaseAge:\s*1440' pnpm-workspace.yaml || return 1
-  else
-    return 1
-  fi
-  return 0
+  [[ -f pnpm-workspace.yaml ]] || return 1
+  grep -q -E '^minimumReleaseAge:[[:space:]]*1440([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
 }
 
 detect_shell_rc() {
@@ -120,16 +108,15 @@ detect_shell_rc() {
 }
 
 check_safe_install_wrapper() {
-  if command -v sfw >/dev/null 2>&1 || command -v socket >/dev/null 2>&1; then
-    return 0
-  fi
-
+  local rc marker='mknext safe npm/pnpm protection'
+  local socket_pattern=${SOCKET_CLI_VERSION//^/\\^}
   for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.profile"; do
-    if [[ -f "$rc" ]] && grep -q -E '(sfw|socket)' "$rc" 2>/dev/null; then
+    if [[ -f "$rc" ]] && grep -q "$marker" "$rc" 2>/dev/null &&
+      grep -q -E "alias npm='(sfw npm|npx --yes @socketsecurity/cli@$socket_pattern npm)'" "$rc" 2>/dev/null &&
+      grep -q -E "alias pnpm='(sfw pnpm|npx --yes @socketsecurity/cli@$socket_pattern pnpm)'" "$rc" 2>/dev/null; then
       return 0
     fi
   done
-
   return 1
 }
 
@@ -138,9 +125,15 @@ setup_safe_install_wrapper() {
   target_rc=$(detect_shell_rc)
   [[ -f "$target_rc" ]] || touch "$target_rc"
 
-  cp "$target_rc" "${target_rc}.mknext.bak"
+  if grep -q 'mknext safe npm/pnpm protection' "$target_rc" 2>/dev/null; then
+    log_info "Safe npm/pnpm wrapper already exists in $target_rc"
+    return 0
+  fi
+  if [[ ! -f "${target_rc}.mknext.bak" ]]; then
+    cp "$target_rc" "${target_rc}.mknext.bak"
+  fi
 
-  cat >>"$target_rc" <<'RC'
+  cat >>"$target_rc" <<RC
 
 # >>> mknext safe npm/pnpm protection (Socket.dev sfw) >>>
 # Intercept and scan packages before installation to prevent malware
@@ -148,8 +141,8 @@ if command -v sfw >/dev/null 2>&1; then
   alias npm='sfw npm'
   alias pnpm='sfw pnpm'
 else
-  alias npm='npx -y @socketsecurity/cli npm'
-  alias pnpm='npx -y @socketsecurity/cli pnpm'
+  alias npm='npx --yes @socketsecurity/cli@$SOCKET_CLI_VERSION npm'
+  alias pnpm='npx --yes @socketsecurity/cli@$SOCKET_CLI_VERSION pnpm'
 fi
 # <<< mknext safe npm/pnpm protection <<<
 RC
@@ -179,7 +172,7 @@ run_audit() {
 
   if ((MKNEXT_AUDIT_SETUP_SAFE == 1)); then
     setup_safe_install_wrapper
-    if has_claude_dir; then
+    if claude_guard_requested; then
       install_claude_guard
     fi
     if has_codex_dir; then
@@ -243,15 +236,17 @@ run_audit() {
   local suggestions=()
 
   if check_safe_install_wrapper; then
-    checks+=('Shell Protection: Safe npm/pnpm wrapper (sfw / Socket.dev) active in shell')
+    checks+=('Shell Protection: Safe npm/pnpm wrapper configured in shell startup')
   else
     suggestions+=('Supply Chain Firewall: Safe wrapper for "pnpm install" is not active')
     suggestions+=('  Run: mknext audit --setup-safe-install')
     suggestions+=('  (Protects pnpm/npm by intercepting packages and blocking malware before install scripts execute)')
   fi
 
-  if has_claude_dir; then
-    if verify_claude_guard; then
+  if claude_guard_requested; then
+    if ! claude_guard_dependencies_available; then
+      suggestions+=('Claude Environment Guard: Install jq and realpath, plus bwrap and socat on Linux, then run "mknext sync"')
+    elif verify_claude_guard; then
       checks+=('Claude Environment Guard: Production env read hooks active (.claude)')
     else
       problems+=('Claude Environment Guard: .claude directory exists but production env protection is not configured (run "mknext sync" or "mknext audit --setup-safe-install")')
@@ -262,6 +257,7 @@ run_audit() {
   if has_codex_dir; then
     if verify_codex_guard; then
       checks+=('Codex Environment Guard: Production env read hooks active (.codex)')
+      checks+=('Codex Environment Guard: Approve the hooks once in an interactive Codex session')
     else
       problems+=('Codex Environment Guard: .codex directory exists but production env protection is not configured (run "mknext sync" or "mknext audit --setup-safe-install")')
       failed=1

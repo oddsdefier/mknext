@@ -52,7 +52,7 @@ When tool behavior changes, update:
 
 Use exact versions in `versions.env`.
 Check the current package version before a pin change.
-The shadcn scaffold command is the only `@latest` exception.
+No command uses `@latest`. The shadcn scaffold command uses the pinned `SHADCN_VERSION`.
 
 Keep the minimum release age active.
 Generated apps set `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.
@@ -61,6 +61,17 @@ Doctor must not change the minimum-release config.
 
 Do not edit a generated lockfile.
 Use a new temporary app for full create tests.
+
+## Repository CI
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`.
+
+The workflow runs these checks in this order:
+
+1. ShellCheck on every tracked `*.sh` file and `bin/mknext`
+2. `pnpm audit`
+3. Gitleaks on Git history
+4. `pnpm test`
 
 ## Changesets
 
@@ -81,20 +92,27 @@ pnpm changeset:version
 
 This command updates `package.json`, the changelog, and `VERSION`.
 
+## Release
+
+Merge the version change to `main`. The release is automatic from there.
+
+`.github/workflows/release.yml` watches `VERSION` on `main`.
+A change to that file creates and pushes the matching `vX.Y.Z` tag.
+The workflow stops when the tag already exists. It never moves a tag.
+
+`install.sh` and `mknext update` clone the newest `vX.Y.Z` tag.
+
+Use `pnpm release:tag` only to tag a release the workflow missed.
+
 ## Local checks
 
-Run all shell tests:
+Run `pnpm test`. That is the same test suite that CI runs.
+
+`pnpm test` skips ShellCheck when it is missing. CI does not skip it.
+Install ShellCheck, then run the same command that CI runs:
 
 ```bash
-for test_file in tests/*_test.sh; do
-  bash "$test_file"
-done
-```
-
-Check Bash syntax:
-
-```bash
-bash -n bin/mknext install.sh lib/config.sh lib/log.sh lib/commands/*.sh tests/*.sh tests/fakes/*
+git ls-files '*.sh' bin/mknext | xargs shellcheck --severity=warning --external-sources
 ```
 
 For a full test, create a new app in a temporary folder.
@@ -105,9 +123,19 @@ Do not approve a bypass.
 
 ## Pull requests
 
-Use the pull request template.
-State the real code changes.
-List each check and its result.
+Use the pull request template in `.github/pull_request_template.md`.
+
+`.github/workflows/pr-governance.yml` requires these headings, in this order:
+
+- `## Summary`
+- `## Validation`
+- `## Risks`
+
+The check fails when a heading is missing or empty.
+State the real code changes in Summary.
+List each check and its result in Validation.
 State each skipped check and reason.
+Write `None` in Risks when no risk is known.
+When a section does not apply, write `N/A - <reason>`.
 
 Do not add tool credit text to commits or pull requests.

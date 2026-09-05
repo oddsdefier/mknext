@@ -47,9 +47,9 @@ The installer copies program files to `~/.local/share/mknext`.
 It writes a small command file to `~/.local/bin/mknext`.
 That command starts the installed entry point.
 
-The installer downloads the main branch when run through a pipe.
+The installer clones a release tag. Git compares content against the commit hash.
 A local installer uses files from its own source folder.
-The update command runs the public installer again.
+The update command reads the newest release tag, then clones it.
 The installed wrapper gives the active install prefix to the update command.
 
 ## Config path
@@ -68,7 +68,7 @@ Each later source replaces an earlier value.
 `create` resolves one target path.
 It stops when that path exists.
 
-The command runs one shared list of 19 steps.
+The command runs one shared list of 20 steps.
 A dry run prints the same list.
 A dry run does not call the step actions.
 
@@ -111,7 +111,7 @@ The generated setup script can require both jobs on `main` after the GitHub repo
 
 `doctor` checks the command and current app setup.
 It checks that Gitleaks is on `PATH`.
-When setup is healthy, it updates direct dependencies through pnpm.
+When setup is healthy, `--update` updates direct dependencies through pnpm.
 The update enforces the minimum release age and does not change its config.
 
 ## Audit path

@@ -15,9 +15,9 @@ It uses Bash and pnpm.
 | `mknext PROJECT` | Creates a Next.js app. This is the main form. |
 | `create` | Creates a Next.js app. |
 | `ci` | Runs local app checks. |
-| `doctor` | Checks setup and updates direct dependencies. |
+| `doctor` | Checks setup. `--update` updates direct dependencies. |
 | `sync` | Synchronizes project configuration, workflows, and pins with mknext templates. |
-| `update` | Downloads and installs the current mknext main branch. |
+| `update` | Downloads and installs the pinned mknext release. |
 
 ## Exit codes
 
@@ -48,6 +48,7 @@ Both modes call the same step functions.
 | `--region REGION` | Sets the Vercel region. |
 | `--yes` | Accepts default answers. |
 | `--dry-run` | Prints create steps without file changes. |
+| `--update` | Updates direct dependencies. `doctor` only. |
 | `--quiet` | Hides normal messages. |
 | `--no-color` | Turns off colored output. |
 | `--force` | Reserved for later use. It does not replace a target in v1. |
@@ -73,12 +74,12 @@ The defaults are `ci=local`, `mode=autonomous`, `preset=b67ek3WsVs`, and `region
 
 ## Create steps
 
-`create` runs these 19 steps in order:
+`create` runs these 20 steps in order:
 
 1. Resolve the app name and target path.
 2. Check pnpm. Install the pinned pnpm version when corepack is available.
 3. Create the target parent folder.
-4. Run `pnpm dlx shadcn@latest init --preset CODE --template next` to create the Next.js app and add shadcn/ui.
+4. Run the pinned shadcn CLI with `--preset CODE --template next`.
 5. Write `.mknext` and run the base install.
 6. Keep the minimum release age active and non-blocking.
 7. Install pinned packages and write package scripts.
@@ -94,6 +95,7 @@ The defaults are `ci=local`, `mode=autonomous`, `preset=b67ek3WsVs`, and `region
 17. Add the `AGENTS.md` stub.
 18. Add `vercel.json` with the selected region.
 19. Offer Tailscale setup in guided mode and format the completed app.
+20. Rename the branch to `main`. Offer the first commit in guided mode.
 
 The generated app uses Next.js App Router.
 It enables React Compiler.
@@ -143,6 +145,8 @@ It exits with code `1` when a check fails.
 ## Sync
 
 `mknext sync` updates an existing mknext project's configuration files, tool settings, Git hooks, security configurations, GitHub Actions workflows, and package script pins to match the installed mknext version.
+It rewrites the `.mknext` marker from the resolved config values.
+It keeps replaced files in `.mknext-sync-backups/`.
 It supports `--dry-run` to preview changes without file modifications.
 
 ## Audit
@@ -157,21 +161,35 @@ It supports `--dry-run` to preview changes without file modifications.
 - Supply Chain Delay: Verifies `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
 - Shell Protection: Checks or installs safe package manager wrappers (`--setup-safe-install`) with automated backup of shell configuration files.
 - Claude Environment Guard: If `.claude` exists, verifies production env read protection hooks are installed and configured.
+  It needs `jq` and `realpath`, plus `bwrap` and `socat` on Linux, and skips with a report when one is missing. `MKNEXT_ENABLE_CLAUDE_GUARD=0` turns it off.
 - Codex Environment Guard: If `.codex` exists, verifies production env read protection hooks are installed and configured.
+  It sets `hooks = true` under `[features]` in `.codex/config.toml`.
+  Codex asks you to approve each hook on the first interactive run, and stores the approval as a hash.
+  The guard stays inactive until you approve it. `mknext audit` cannot check that approval.
+  Codex runs `PreToolUse` for shell commands only, so the guard blocks commands, not file reads.
 
 It exits with code `0` when all security gates pass.
 It exits with code `1` when an issue is detected.
+
+## Attribution protection
+
+Generated apps block AI attribution marks in commits and pull requests.
+
+- A `commit-msg` hook strips attribution trailers from the commit message.
+- A `pre-push` hook rejects a push when a commit message still carries a mark.
+- A Claude `PreToolUse` hook blocks a pull request body that carries a mark.
+- A `strip-ai-pr-body` workflow removes marks from a pull request body on GitHub.
 
 ## Doctor
 
 `mknext doctor` checks:
 
-- Node.js on `PATH`
+- Node.js on `PATH`, at `NODE_MIN_VERSION` or newer
 - pnpm on `PATH`
 - Gitleaks on `PATH`
 - The `.mknext` marker
 - Valid config values
-- Direct dependency updates through pnpm
+- Direct dependency updates through pnpm when `--update` is set
 - The mknext version and install path
 
 The update uses exact versions.
@@ -185,7 +203,7 @@ It exits with code `1` when a check fails.
 
 `versions.env` is the source for pinned versions.
 Pinned npm packages do not use `@latest`.
-The shadcn scaffold command is the exception. It uses `shadcn@latest` as part of the requested template command.
+The shadcn scaffold command uses the pinned `SHADCN_VERSION` value.
 
 `mknext` does not write or change `.npmrc`.
 It writes `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
@@ -202,10 +220,13 @@ Changesets can version the private package.
 
 ## Installer
 
-The public install command is:
+The public install command downloads the pinned installer:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/main/install.sh | bash
+installer=$(mktemp)
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/oddsdefier/mknext/4fad3f0814cbce114c74a272720236c1784db06c/install.sh -o "$installer"
+bash "$installer"
+rm "$installer"
 ```
 
 `install.sh` copies mknext to a user folder.
@@ -214,8 +235,8 @@ The program files are under `~/.local/share/mknext`.
 
 The installer can use `MKNEXT_INSTALL_PREFIX` for a test install.
 
-`mknext update` downloads and runs the same public installer.
-It replaces the installed program files with the current main branch.
+`mknext update` clones the newest release tag. Git verifies the content.
+It replaces the installed program files with that release.
 It keeps the active install prefix.
 
 ## Acceptance checks
@@ -232,7 +253,7 @@ The v1 build must meet these checks:
 8. A generated app has Husky, lint-staged, and Changesets files.
 9. A generated app has `.mknext`, `.gitignore`, and `vercel.json`.
 10. `mknext ci` uses project-local tools.
-11. `mknext doctor` reports setup problems and updates direct dependencies.
+11. `mknext doctor` reports setup problems. `--update` updates direct dependencies.
 12. A generated app keeps the minimum release age active and non-blocking.
 13. The root Changesets command keeps `package.json` and `VERSION` in sync.
 14. A generated app has Gitleaks config and local secret scanning.
@@ -241,5 +262,6 @@ The v1 build must meet these checks:
 17. A generated app has a script that protects `main` with required checks and reviews.
 18. A generated app uses `cn` and has React Grab as a dev dependency.
 19. `mknext audit` verifies secrets, CVEs, env hygiene, client isolation, CI permissions, and supply chain rules, and supports `--setup-safe-install` with shell backups.
+20. A generated app blocks AI attribution marks in commit messages and pull request bodies.
 
 - Replace the `AGENTS.md` stub when its full rules are approved.

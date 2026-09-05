@@ -4,11 +4,19 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.3.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "test": "for test in tests/*_test.sh; do bash \"$test\" || exit 1; done",
     "changeset": "changeset",
-    "changeset:version": "changeset version && node scripts/sync-version.mjs"
+    "changeset:version": "changeset version && node scripts/sync-version.mjs",
+    "release:tag": "git tag \"v$(cat VERSION)\" && git push origin \"v$(cat VERSION)\""
   },
   "devDependencies": {
-    "@changesets/cli": "3.0.1"
-  }
+    "@changesets/cli": "3.0.1",
+    "@oxlint/plugins": "1.81.0",
+    "oxlint": "1.81.0"
+  },
+  "license": "MIT"
 }

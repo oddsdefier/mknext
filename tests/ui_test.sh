@@ -23,10 +23,10 @@ if grep -q $'\033' <<<"$no_color_help"; then
   exit 1
 fi
 
-# Test 3: create dry-run preserves DRY RUN 19/19 step output
+# Test 3: create dry-run preserves DRY RUN 20/20 step output
 dry_output=$(PATH="$root_dir/tests/fakes:$PATH" \
   "$root_dir/bin/mknext" create --name "$test_dir/app" --dry-run --quiet)
-rg -q '^DRY RUN 19/19 ' <<<"$dry_output"
+rg -q '^DRY RUN 20/20 ' <<<"$dry_output"
 
 # Test 4: doctor reports status
 mkdir -p "$test_dir/app"
@@ -37,14 +37,24 @@ mkdir -p "$test_dir/app"
 )
 
 # Test 5: update displays progress feedback
-chmod +x "$root_dir/tests/fakes/curl"
-update_output=$(
-  MKNEXT_CHECK_LOG="$test_dir/curl.log" \
-  MKNEXT_UPDATE_MARKER="$test_dir/updated" \
-  MKNEXT_UPDATE_PREFIX_MARKER="$test_dir/prefix" \
-  PATH="$root_dir/tests/fakes:$PATH" \
-  "$root_dir/bin/mknext" update
+release_work="$test_dir/release"
+mkdir -p "$release_work"
+cp "$root_dir/VERSION" "$root_dir/versions.env" "$root_dir/install.sh" "$release_work/"
+cp -R "$root_dir/bin" "$root_dir/lib" "$root_dir/templates" "$release_work/"
+printf '9.9.9\n' >"$release_work/VERSION"
+(
+  cd "$release_work"
+  git init --quiet --initial-branch main .
+  git add -A
+  git -c user.name=test -c user.email=test@example.com commit --quiet -m 'chore: release'
+  git tag v9.9.9
+  git clone --quiet --bare . "$test_dir/release.git"
 )
-rg -q 'mknext CLI has been successfully updated' <<<"$update_output"
+update_output=$(
+  MKNEXT_SOURCE_REPOSITORY="$test_dir/release.git" \
+  MKNEXT_INSTALL_PREFIX="$test_dir/ui-prefix" \
+  "$root_dir/bin/mknext" update 2>&1
+)
+rg -q 'mknext is updated to v9.9.9' <<<"$update_output"
 
 printf 'PASS: CLI UI and formatting pass checks\n'

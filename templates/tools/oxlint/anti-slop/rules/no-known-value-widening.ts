@@ -145,6 +145,7 @@ export const noKnownValueWideningRule = defineRule({
 	},
 	createOnce(context) {
 		let environment: TypeEnvironment | null = null;
+		const reportedExpressions = new WeakSet<ESTree.Node>();
 
 		const reportFlow = (
 			expression: ESTree.Expression,
@@ -158,7 +159,10 @@ export const noKnownValueWideningRule = defineRule({
 			) {
 				return;
 			}
+			const evidenceNode = unwrapExpression(expression);
+			if (reportedExpressions.has(evidenceNode)) return;
 			if (!hasKnownEvidence(context.sourceCode, expression)) return;
+			reportedExpressions.add(evidenceNode);
 			context.report({
 				node: expression,
 				messageId: "widening",

@@ -1,12 +1,10 @@
 # Project Instructions
 
-- Read `CONTEXT.md` when present.
 - Keep changes minimal and focused.
 - Run project validation scripts before completion (`bash tests/*_test.sh`).
 - Do not commit, push, or open pull requests unless requested.
-- Never use `--no-verify` or `-n` on git commands.
-- Never add AI attribution to commits or pull requests.
-- Fill all required sections in `.github/pull_request_template.md` on pull requests.
+- Never use `--no-verify` or `-n` on git commands unless requested.
+- Write only needed tests. Do not test UI display only.
 
 ## Terse Output Style (Mandatory)
 Write in terse ASD-STE100.

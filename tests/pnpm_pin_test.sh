@@ -19,7 +19,7 @@ MKNEXT_CHECK_LOG="$check_log" \
   "$root_dir/bin/mknext" create --name "$test_dir/app" --yes --quiet
 
 rg -q '^corepack prepare pnpm@12.3.1 --activate$' "$check_log"
-rg -q '^pnpm dlx shadcn@latest init --preset b67ek3WsVs --template next --name app --yes$' "$check_log"
+rg -q '^pnpm dlx shadcn@\^4.20.1 init --preset b67ek3WsVs --template next --name app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
 rg -q '^preset=b67ek3WsVs$' "$test_dir/app/.mknext"
 rg -q '^minimumReleaseAge: 1440$' "$test_dir/app/pnpm-workspace.yaml"
 rg -q '^minimumReleaseAgeStrict: false$' "$test_dir/app/pnpm-workspace.yaml"

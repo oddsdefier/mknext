@@ -25,6 +25,7 @@ function importedName(node: ESTree.Node): string | null {
 function isTestFrameworkObject(
   sourceCode: SourceCode,
   expression: ESTree.Expression,
+  visited = new Set<Variable>(),
 ): expression is ESTree.IdentifierReference {
   if (expression.type !== "Identifier") return false;
   if (
@@ -38,13 +39,19 @@ function isTestFrameworkObject(
   if (variable === null || variable.defs.length === 0) {
     return expression.name === "vi" || expression.name === "jest";
   }
+  if (visited.has(variable)) return false;
+  if (variable.references.some((reference) => !reference.init && reference.isWrite())) return false;
+  visited.add(variable);
   return variable.defs.some((definition) => {
-    if (definition.type !== "ImportBinding" || definition.parent?.type !== "ImportDeclaration") {
-      return false;
+    if (definition.type === "ImportBinding" && definition.parent?.type === "ImportDeclaration") {
+      const source = definition.parent.source.value;
+      const name = importedName(definition.node);
+      return (source === "vitest" && name === "vi") || (source === "@jest/globals" && name === "jest");
     }
-    const source = definition.parent.source.value;
-    const name = importedName(definition.node);
-    return (source === "vitest" && name === "vi") || (source === "@jest/globals" && name === "jest");
+    if (definition.type !== "Variable" || definition.node.type !== "VariableDeclarator") return false;
+    if (definition.node.parent.type !== "VariableDeclaration" || definition.node.parent.kind !== "const") return false;
+    const init = definition.node.init;
+    return init !== null && isTestFrameworkObject(sourceCode, init, visited);
   });
 }
 

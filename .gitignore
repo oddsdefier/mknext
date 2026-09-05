@@ -9,4 +9,5 @@ node_modules/
 /scratch/
 *.plan.md
 /.claude/
+/.mknext-sync-backups/
 
