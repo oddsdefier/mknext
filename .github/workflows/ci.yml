@@ -32,7 +32,7 @@ jobs:
       - name: Prepare test environment
         run: |
           sudo apt-get update
-          sudo apt-get install --yes bubblewrap socat
+          sudo apt-get install --yes bubblewrap ripgrep socat
           git config --global user.name 'mknext tests'
           git config --global user.email 'tests@mknext.invalid'
       - name: Install dependencies
