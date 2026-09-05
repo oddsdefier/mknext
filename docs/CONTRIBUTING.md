@@ -97,8 +97,10 @@ This command updates `package.json`, the changelog, and `VERSION`.
 Merge the version change to `main`. The release is automatic from there.
 
 `.github/workflows/release.yml` watches `VERSION` on `main`.
-A change to that file creates and pushes the matching `vX.Y.Z` tag.
-The workflow stops when the tag already exists. It never moves a tag.
+A change creates the matching `vX.Y.Z` tag and GitHub Release.
+Manual runs can recover missed releases.
+Existing GitHub Releases stop duplicate publication.
+The workflow never moves a tag.
 
 `install.sh` and `mknext update` clone the newest `vX.Y.Z` tag.
 

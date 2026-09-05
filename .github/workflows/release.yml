@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths: [VERSION]
@@ -20,7 +21,9 @@ jobs:
     steps:
       - name: Check out the source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Tag the release
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -o errexit
           set -o nounset
@@ -35,10 +38,13 @@ jobs:
           esac
           tag="v$version"
           # The tag is what install.sh and mknext update clone. Never move one.
-          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
             printf '%s already exists. Nothing to release.\n' "$tag"
             exit 0
           fi
-          git tag "$tag"
-          git push origin "$tag"
+          gh release create "$tag" --verify-tag --title "$tag" --generate-notes
           printf 'Released %s\n' "$tag"
