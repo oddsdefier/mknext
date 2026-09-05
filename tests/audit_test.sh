@@ -163,7 +163,14 @@ JS
   mkdir -p .claude
   printf '{"model":"my-custom-model","customSetting":true,"permissions":{"deny":["Read(**/.env.production.local)","Read(**/.env.prod.local)","Read(**/production.local.env)","Read(**/prod.local.env)"]},"sandbox":{"filesystem":{"denyRead":["./**/.env.production.local","./**/.env.prod.local","./**/production.local.env","./**/prod.local.env"]}}}\n' >.claude/settings.local.json
   cp .claude/settings.local.json .claude/settings.local.json.before
-  if ! missing_output=$(PATH="$test_dir/bin:$root_dir/tests/fakes:/usr/bin:/bin" \
+  command() {
+    if [[ ${1:-} == -v && ${2:-} == socat ]]; then
+      return 1
+    fi
+    builtin command "$@"
+  }
+  export -f command
+  if ! missing_output=$(PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
     "$root_dir/bin/mknext" sync --quiet 2>&1); then
     printf 'FAIL: sync should survive missing Claude sandbox dependencies\n' >&2
     exit 1
@@ -176,6 +183,7 @@ JS
     printf 'FAIL: sync installed the Claude guard without its dependencies\n' >&2
     exit 1
   }
+  unset -f command
 
   PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
     "$root_dir/bin/mknext" sync --quiet
