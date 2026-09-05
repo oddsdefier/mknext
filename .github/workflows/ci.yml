@@ -29,6 +29,12 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Prepare test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes bubblewrap socat
+          git config --global user.name 'mknext tests'
+          git config --global user.email 'tests@mknext.invalid'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Check shell scripts

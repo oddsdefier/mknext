@@ -125,13 +125,13 @@ Do not approve a bypass.
 
 Use the pull request template in `.github/pull_request_template.md`.
 
-`.github/workflows/pr-governance.yml` requires these headings, in this order:
+`.github/workflows/pr-governance.yml` checks these headings:
 
 - `## Summary`
 - `## Validation`
 - `## Risks`
 
-The check fails when a heading is missing or empty.
+The check warns when a heading is missing or empty.
 State the real code changes in Summary.
 List each check and its result in Validation.
 State each skipped check and reason.
