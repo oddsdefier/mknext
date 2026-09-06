@@ -24,9 +24,22 @@ run_in_app() {
   )
 }
 
+create_reject_mknext_dir() {
+  local dir=$1 canonical_root
+  canonical_root=$(cd -P "$ROOT_DIR" && pwd)
+  while [[ "$dir" != / && -n "$dir" ]]; do
+    if [[ "$dir" == "$canonical_root" ]] ||
+      [[ -f "$dir/bin/mknext" && -f "$dir/VERSION" && -d "$dir/templates" ]]; then
+      log_error "cannot create an app inside the mknext directory: $dir"
+      return 1
+    fi
+    dir=$(dirname "$dir")
+  done
+}
+
 create_resolve_name() {
   local requested_name=$MKNEXT_CREATE_NAME
-  local unresolved_target parent basename_target canonical_parent
+  local unresolved_target parent basename_target canonical_parent existing_parent
 
   [[ -n "$requested_name" && "$requested_name" != / ]] || {
     log_error 'project name cannot be empty'
@@ -42,6 +55,13 @@ create_resolve_name() {
     log_error "invalid project target: $requested_name"
     return 1
   }
+  # Check before mkdir, so a rejected target leaves no new directory.
+  existing_parent=$parent
+  while [[ ! -d "$existing_parent" && "$existing_parent" != / ]]; do
+    existing_parent=$(dirname "$existing_parent")
+  done
+  create_reject_mknext_dir "$(cd -P "$existing_parent" && pwd)" || return 1
+
   mkdir -p "$parent"
   canonical_parent=$(cd -P "$parent" && pwd)
   MKNEXT_CREATE_FINAL_TARGET="$canonical_parent/$basename_target"

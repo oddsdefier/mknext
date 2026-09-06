@@ -29,7 +29,7 @@ It targets macOS and Linux.
 ## Where things live
 
 - `bin/mknext` — entry point. It sources `versions.env` and every file in `lib/`.
-- `lib/commands/` — one file per command: create, sync, audit, ci, doctor, update.
+- `lib/commands/` — one file per command: create, sync, audit, ci, doctor, update, uninstall.
 - `lib/*-guard.sh` — installs the Claude and Codex hooks into a project.
 - `templates/` — everything a generated app receives.
 - `tests/*_test.sh` — the whole suite. Run `pnpm test`.

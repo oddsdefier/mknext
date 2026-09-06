@@ -50,4 +50,15 @@ compgen -G "$test_dir/rollback-app.mknext.*" >/dev/null && {
   exit 1
 }
 
+if (cd "$root_dir" && PATH="$root_dir/tests/fakes:$PATH" \
+  ./bin/mknext create --name inside-app --yes --quiet 2>/dev/null); then
+  printf 'FAIL: create was allowed inside the mknext directory\n' >&2
+  exit 1
+fi
+[[ ! -e "$root_dir/inside-app" ]] || {
+  printf 'FAIL: rejected create left a directory in the mknext repo\n' >&2
+  exit 1
+}
+
 printf 'PASS: project creation rejects collisions and rolls back failures\n'
+printf 'PASS: create rejects a target inside the mknext directory\n'

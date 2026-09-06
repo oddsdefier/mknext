@@ -19,6 +19,7 @@ source "$ROOT_DIR/lib/commands/ci.sh"
 source "$ROOT_DIR/lib/commands/update.sh"
 source "$ROOT_DIR/lib/commands/sync.sh"
 source "$ROOT_DIR/lib/commands/audit.sh"
+source "$ROOT_DIR/lib/commands/uninstall.sh"
 source "$ROOT_DIR/lib/claude-guard.sh"
 source "$ROOT_DIR/lib/codex-guard.sh"
 
@@ -31,8 +32,17 @@ done
 init_colors
 
 case "${1:-}" in
-  ''|--*|-h|create|ci|doctor|update|sync|audit) ;;
-  *) set -- create --name "$1" "${@:2}" ;;
+  ''|--*|-h|create|ci|doctor|update|sync|audit|uninstall) ;;
+  *)
+    # The short form is create. Confirm it, because a typo looks like a command.
+    if [[ -t 0 && -t 1 && " ${*:2} " != *' --yes '* && " ${*:2} " != *' --quiet '* ]]; then
+      ui_confirm "Create a new Next.js app named \"$1\"?" 'Y' || {
+        log_info 'Cancelled. Run `mknext --help` to see the commands.'
+        exit 0
+      }
+    fi
+    set -- create --name "$1" "${@:2}"
+    ;;
 esac
 
 print_help() {
@@ -48,6 +58,7 @@ ${C_BOLD}USAGE${C_RESET}
   ${C_CYAN}mknext audit${C_RESET} [options]
   ${C_CYAN}mknext sync${C_RESET} [options]
   ${C_CYAN}mknext update${C_RESET}
+  ${C_CYAN}mknext uninstall${C_RESET} [--yes]
 
 ${C_BOLD}COMMANDS${C_RESET}
   ${C_BOLD}create${C_RESET}       Scaffold a new Next.js app with shadcn, Tailwind, and quality tools
@@ -56,6 +67,7 @@ ${C_BOLD}COMMANDS${C_RESET}
   ${C_BOLD}audit${C_RESET}        Run automated security scans (secrets, CVEs, env, supply chain)
   ${C_BOLD}sync${C_RESET}         Synchronize project configs, workflows, and tool pins
   ${C_BOLD}update${C_RESET}       Update the mknext CLI to the latest version
+  ${C_BOLD}uninstall${C_RESET}    Remove the mknext CLI from the install prefix
 
 ${C_BOLD}OPTIONS${C_RESET}
   ${C_GREEN}--mode${C_RESET} MODE      Use autonomous (default) or guided mode
@@ -203,6 +215,19 @@ case "${1:-}" in
       esac
     done
     run_update
+    ;;
+  uninstall)
+    shift
+    while (($#)); do
+      case "$1" in
+        --yes|-y) MKNEXT_UNINSTALL_YES=1; shift ;;
+        --no-color) MKNEXT_NO_COLOR=1; shift ;;
+        --quiet) MKNEXT_QUIET=1; shift ;;
+        --help|-h) print_help; exit 0 ;;
+        *) log_error "unknown option: $1"; exit 2 ;;
+      esac
+    done
+    run_uninstall
     ;;
   sync)
     shift

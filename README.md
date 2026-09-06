@@ -65,6 +65,15 @@ The update command finds the newest release tag on GitHub.
 It stops when that tag is already installed.
 It keeps the install prefix used by the installed command.
 
+Remove an installed copy:
+
+```bash
+mknext uninstall
+```
+
+The uninstall command asks first. Use `--yes` to skip the question.
+It removes the command and its files. Generated apps stay unchanged.
+
 Synchronize project configuration, workflows, and tool pins:
 
 ```bash
