@@ -1,5 +1,37 @@
 # mknext
 
+## 1.2.0
+
+### Minor Changes
+
+- 0161953: Add Claude Code production environment guard hooks and settings synchronization to prevent Claude from reading protected `.env` files.
+- 0161953: Add Codex CLI production environment guard hooks and non-destructive `.codex/hooks.json` synchronization.
+- 4fad3f0: Enforce local pre-push hook and Claude PreToolUse hook to block AI attribution before push and PR creation.
+- 4908c64: Add a `doctor --update` flag, keep the Claude environment guard on by default and skip it with a report when its tools are missing, add a repository CI workflow. Fix the audit workflow-permissions check, which rejected the valid inline `permissions: {contents: read}` form.
+- 0161953: Add unified AGENTS.md template with strict ASD-STE100 terse output style and CLAUDE.md pointing to AGENTS.md
+- 883a877: Add an `mknext uninstall` command that removes the CLI from its install prefix. Ask for confirmation before the short `mknext <name>` form creates an app. Reject a create target inside the mknext source or install directory.
+- 8e4d846: Add commit message attribution stripper hook, Claude attribution suppression in settings, and pull request body AI attribution protection.
+
+### Patch Changes
+
+- 0161953: Ignore agent scratchpads, draft plans, specs, and temporary docs in generated `.gitignore`.
+- 4908c64: Add shell linting, repository consistency checks, and the missing project files.
+  
+  - `tests/repo_consistency_test.sh` runs ShellCheck, compares the release pin in
+    `install.sh` against `versions.env`, and compares the files shared between the
+    repository root and `templates/`.
+  - Repository CI now runs ShellCheck, `pnpm audit`, and Gitleaks.
+  - Add `LICENSE`, `SECURITY.md`, `CONTEXT.md`, and a Dependabot config for actions.
+  
+  `create` now renames the branch to `main` and offers the first commit.
+  
+  `install.sh` and `mknext update` now clone the newest `vX.Y.Z` git tag.
+  This removes `MKNEXT_RELEASE_REF` and `MKNEXT_SOURCE_SHA256`.
+  Update moved to the newest release, not the commit it shipped with.
+  Both commands now need `git` instead of `curl` and `sha256sum`.
+  
+  A release workflow now tags `main` when `VERSION` changes.
+
 ## 1.1.0
 
 ### Minor Changes
