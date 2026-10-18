@@ -17,7 +17,7 @@ It uses Bash and pnpm.
 | `--migrate` / `migrate` | Replaces existing ESLint and Prettier tooling. |
 | `ci` | Runs local app checks. |
 | `doctor` | Checks setup. `--update` updates direct dependencies. |
-| `sync` | Synchronizes project configuration, workflows, and pins with mknext templates. |
+| `sync` | Synchronizes mknext-owned configuration, workflows, and pins. |
 | `update` | Downloads and installs the pinned mknext release. |
 
 ## Exit codes
@@ -93,7 +93,7 @@ The defaults are `ci=local`, `mode=autonomous`, `preset=b67ek3WsVs`, and `region
 14. Add Husky, staged Gitleaks scanning, and lint-staged.
 15. Add Changesets.
 16. Add pull request files, remote CI, Gitleaks config, security docs, and the branch protection script.
-17. Add the `AGENTS.md` stub.
+17. Add `AGENTS.md`, `CLAUDE.md`, and `CONTEXT.md`.
 18. Add `vercel.json` with the selected region.
 19. Offer Tailscale setup in guided mode and format the completed app.
 20. Rename the branch to `main`. Offer the first commit in guided mode.
@@ -150,6 +150,12 @@ For `github`, it verifies `.github/workflows/ci.yml` is present and runs the ful
 
 It exits with code `1` when a check fails.
 
+React Doctor ignores `only-export-components` in `components/ui/**`.
+shadcn components export variant helpers next to the component.
+
+`mknext create` writes `metadata` in `app/layout.tsx` when the scaffold has none.
+The title uses the project name.
+
 ## Migrate
 
 `mknext --migrate` operates on the current project's `package.json`.
@@ -176,32 +182,41 @@ It never automatically formats application source.
 
 ## Sync
 
-`mknext sync` updates an existing mknext project's configuration files, tool settings, Git hooks, security configurations, GitHub Actions workflows, and package script pins to match the installed mknext version.
+`mknext sync` updates an existing mknext project to match its installed version. It updates configuration, tool settings, Git hooks, security settings, workflows, and package script pins.
 It rewrites the `.mknext` marker from the resolved config values.
 It keeps replaced files in `.mknext-sync-backups/`.
 It supports `--dry-run` to preview changes without file modifications.
+It preserves application-owned files and custom package scripts.
+It never replaces `next.config.ts` or `tsconfig.json`.
+It never replaces `.gitignore`, `pnpm-workspace.yaml`, or `lib/utils.ts`.
 
 ## Audit
 
 `mknext audit` scans an mknext project for security issues and compliance:
 
-- Secret Scanning: Scans repository with Gitleaks.
-- Dependency CVEs: Checks vulnerabilities via `pnpm audit`.
-- Environment Hygiene: Verifies no sensitive `.env*` files are tracked in Git.
-- Client Isolation: Detects unintended server secret exposure in `'use client'` files.
-- Workflow Permissions: Enforces explicit top-level `permissions` in GitHub Actions workflows.
-- Supply Chain Delay: Verifies `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
-- Shell Protection: Checks or installs safe package manager wrappers (`--setup-safe-install`) with automated backup of shell configuration files.
-- Claude Environment Guard: If `.claude` exists, verifies production env read protection hooks are installed and configured.
-  It needs `jq` and `realpath`, plus `bwrap` and `socat` on Linux, and skips with a report when one is missing. `MKNEXT_ENABLE_CLAUDE_GUARD=0` turns it off.
-- Codex Environment Guard: If `.codex` exists, verifies production env read protection hooks are installed and configured.
+- Gitleaks scans the repository for secrets.
+- `pnpm audit` checks dependencies for known vulnerabilities.
+- The audit checks whether Git tracks sensitive `.env*` files.
+- It detects server secrets in `'use client'` files.
+- It requires top-level `permissions` in GitHub Actions workflows.
+- It checks `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`.
+- It checks `trustPolicy: no-downgrade` in `pnpm-workspace.yaml`.
+- `--setup-safe-install` installs safe package manager wrappers and backs up shell configuration files.
+- If `.claude` exists, the audit checks its production environment protection hooks.
+  The check needs `jq` and `realpath`.
+  On Linux, it also needs `bwrap` and `socat`.
+  It reports and skips missing tools. `MKNEXT_ENABLE_CLAUDE_GUARD=0` turns it off.
+- If `.codex` exists, the audit checks its production environment protection hooks.
   It sets `hooks = true` under `[features]` in `.codex/config.toml`.
-  Codex asks you to approve each hook on the first interactive run, and stores the approval as a hash.
-  The guard stays inactive until you approve it. `mknext audit` cannot check that approval.
-  Codex runs `PreToolUse` for shell commands only, so the guard blocks commands, not file reads.
+  Codex asks for hook approval during the first interactive run.
+  It stores the approval as a hash.
+  The guard stays inactive until approval. `mknext audit` cannot check approval.
+  Codex runs `PreToolUse` for shell commands only.
+  The guard blocks commands, not file reads.
 
 It exits with code `0` when all security gates pass.
 It exits with code `1` when an issue is detected.
+Missing pnpm or Gitleaks makes the command fail.
 
 ## Attribution protection
 
@@ -236,10 +251,13 @@ It exits with code `1` when a check fails.
 `versions.env` is the source for pinned versions.
 Pinned npm packages do not use `@latest`.
 The shadcn scaffold command uses the pinned `SHADCN_VERSION` value.
+Generated `package.json` dependency versions are exact.
 
 `mknext` does not write or change `.npmrc`.
-It writes `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`.
+It writes `minimumReleaseAge: 4320` in `pnpm-workspace.yaml`.
 It writes `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.
+It writes `trustPolicy: no-downgrade` so pnpm fails when a package loses publisher trust.
+It writes `trustPolicyIgnoreAfter: 43200` so old packages without trust evidence do not block installs.
 
 Generated apps use Changesets.
 They use `cn` instead of `clsx` and `tailwind-merge`.
@@ -295,5 +313,3 @@ The v1 build must meet these checks:
 18. A generated app uses `cn` and has React Grab as a dev dependency.
 19. `mknext audit` verifies secrets, CVEs, env hygiene, client isolation, CI permissions, and supply chain rules, and supports `--setup-safe-install` with shell backups.
 20. A generated app blocks AI attribution marks in commit messages and pull request bodies.
-
-- Replace the `AGENTS.md` stub when its full rules are approved.

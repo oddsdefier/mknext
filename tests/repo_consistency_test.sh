@@ -33,6 +33,19 @@ for file in "${shared_files[@]}"; do
   }
 done
 
+rg -q '^  macos:$' .github/workflows/ci.yml || {
+  printf 'FAIL: repository CI does not test macOS\n' >&2
+  exit 1
+}
+rg -q 'bash tests/real_scaffold_smoke.sh' .github/workflows/ci.yml || {
+  printf 'FAIL: repository CI lacks a real scaffold smoke test\n' >&2
+  exit 1
+}
+[[ -f tests/real_scaffold_smoke.sh ]] || {
+  printf 'FAIL: real scaffold smoke test is missing\n' >&2
+  exit 1
+}
+
 if command -v shellcheck >/dev/null 2>&1; then
   mapfile -t scripts < <(git ls-files '*.sh' bin/mknext)
   shellcheck --severity=warning --external-sources "${scripts[@]}" || {

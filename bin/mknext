@@ -49,7 +49,7 @@ esac
 print_help() {
   init_colors
   cat <<EOF
-${C_BOLD}${C_CYAN}▲ mknext${C_RESET} ${C_DIM}v$(<"$ROOT_DIR/VERSION")${C_RESET} — Production-grade Next.js App Generator
+${C_BOLD}${C_CYAN}▲ mknext${C_RESET} ${C_DIM}v$(<"$ROOT_DIR/VERSION")${C_RESET} — Next.js app generator
 
 ${C_BOLD}USAGE${C_RESET}
   ${C_CYAN}mknext${C_RESET} ${C_DIM}<project-name>${C_RESET} [options]
@@ -63,11 +63,11 @@ ${C_BOLD}USAGE${C_RESET}
   ${C_CYAN}mknext uninstall${C_RESET} [--yes]
 
 ${C_BOLD}COMMANDS${C_RESET}
-  ${C_BOLD}create${C_RESET}       Scaffold a new Next.js app with shadcn, Tailwind, and quality tools
+  ${C_BOLD}create${C_RESET}       Create a Next.js app with shadcn, Tailwind, and checks
   ${C_BOLD}migrate${C_RESET}      Replace ESLint and Prettier with Oxlint and Oxfmt
-  ${C_BOLD}ci${C_RESET}           Run local or GitHub CI checks in parallel (lint, format, types, audit)
+  ${C_BOLD}ci${C_RESET}           Run CI checks in parallel (lint, format, types, audit)
   ${C_BOLD}doctor${C_RESET}       Verify setup and update direct dependencies
-  ${C_BOLD}audit${C_RESET}        Run automated security scans (secrets, CVEs, env, supply chain)
+  ${C_BOLD}audit${C_RESET}        Check secrets, dependencies, environment files, and package settings
   ${C_BOLD}sync${C_RESET}         Synchronize project configs, workflows, and tool pins
   ${C_BOLD}update${C_RESET}       Update the mknext CLI to the latest version
   ${C_BOLD}uninstall${C_RESET}    Remove the mknext CLI from the install prefix
@@ -100,7 +100,7 @@ case "${1:-}" in
   '')
     if [[ -t 0 && -t 1 ]]; then
       ui_banner
-      if ui_confirm "No project specified. Would you like to create a new Next.js app now?" "Y"; then
+      if ui_confirm "Create a new Next.js app?" "Y"; then
         load_config
         run_create
         exit 0

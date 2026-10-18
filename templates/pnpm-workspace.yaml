@@ -1,5 +1,7 @@
-minimumReleaseAge: 1440
+minimumReleaseAge: 4320
 minimumReleaseAgeStrict: false
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 43200
 
 allowBuilds:
   sharp: false

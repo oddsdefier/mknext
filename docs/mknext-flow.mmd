@@ -1,0 +1,10 @@
+flowchart TD
+  User[Developer] --> CLI[mknext CLI]
+  Config[Config and version pins] --> CLI
+  CLI --> Create[create]
+  CLI --> Maintain[doctor / sync / audit / ci]
+  Create --> Base[shadcn Next.js base]
+  Base --> Templates[Apply templates and package scripts]
+  Templates --> App[Generated app]
+  Maintain --> App
+  App --> CI[Local checks and GitHub Actions]

@@ -52,7 +52,7 @@ When tool behavior changes, update:
 
 Use exact versions in `versions.env`.
 Check the current package version before a pin change.
-No command uses `@latest`. The shadcn scaffold command uses the pinned `SHADCN_VERSION`.
+No command uses `@latest`. The shadcn create command uses the pinned `SHADCN_VERSION`.
 
 Keep the minimum release age active.
 Generated apps set `minimumReleaseAgeStrict: false` so a new pinned package does not stop the install.
@@ -110,7 +110,7 @@ Use `pnpm release:tag` only to tag a release the workflow missed.
 
 Run `pnpm test`. That is the same test suite that CI runs.
 
-`pnpm test` skips ShellCheck when it is missing. CI does not skip it.
+`pnpm test` skips ShellCheck when missing. CI requires ShellCheck.
 Install ShellCheck, then run the same command that CI runs:
 
 ```bash

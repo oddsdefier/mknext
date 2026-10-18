@@ -26,18 +26,32 @@ const knipConfig = JSON.parse(await readFile(path.join(appDirectory, 'knip.json'
 const oxfmtConfig = JSON.parse(await readFile(path.join(appDirectory, '.oxfmtrc.json'), 'utf8'));
 const utils = await readFile(path.join(appDirectory, 'lib/utils.ts'), 'utf8');
 const page = await readFile(path.join(appDirectory, 'app/page.tsx'), 'utf8');
+const layout = await readFile(path.join(appDirectory, 'app/layout.tsx'), 'utf8');
 const gitignore = await readFile(path.join(appDirectory, '.gitignore'), 'utf8');
+const agents = await readFile(path.join(appDirectory, 'AGENTS.md'), 'utf8');
+const context = await readFile(path.join(appDirectory, 'CONTEXT.md'), 'utf8');
 
 if (packageData.scripts.typecheck !== 'next typegen && tsc --noEmit') {
   throw new Error('typecheck does not generate Next.js types');
 }
 if (packageData.type !== 'module') throw new Error('generated app does not use ES modules');
+for (const dependencyGroup of [packageData.dependencies, packageData.devDependencies]) {
+  for (const [dependency, version] of Object.entries(dependencyGroup ?? {})) {
+    if (/^[~^*]/.test(version)) throw new Error(`${dependency} has a floating version`);
+  }
+}
 if (packageData.engines?.node !== '>=22') throw new Error('generated app does not declare Node.js support');
 if (tsconfig.compilerOptions.allowImportingTsExtensions !== true) {
   throw new Error('TypeScript does not allow tool source imports');
 }
 if (!complexityConfig.includes("from './oxlint.config.ts'")) {
   throw new Error('complexity config cannot load the base config');
+}
+if (!layout.includes('export const metadata')) {
+  throw new Error('root layout has no metadata for search previews');
+}
+if (!layout.includes(`title: '${path.basename(appDirectory)}'`)) {
+  throw new Error('root layout metadata does not use the project name');
 }
 if (doctorConfig.includes("from 'react-doctor'")) {
   throw new Error('React Doctor config uses a missing run-time export');
@@ -72,6 +86,11 @@ if (JSON.stringify(knipConfig.ignoreDependencies) !== JSON.stringify([
   throw new Error('Knip does not match the unused Hugeicons preset packages');
 }
 if (!gitignore.includes('node_modules')) throw new Error('generated .gitignore is missing');
+for (const heading of ['## Design', '## Debugging', '## Review', '## Completion report']) {
+  if (!agents.includes(heading)) throw new Error(`AGENTS.md lacks ${heading}`);
+}
+if (!context.includes('# Project context')) throw new Error('CONTEXT.md is missing');
+if (gitignore.includes('/docs/**')) throw new Error('generated app ignores project documentation');
 if (page !== 'export default function Page() { return <main>Hello</main>; }\n') {
   throw new Error('generated app was not formatted');
 }
@@ -81,7 +100,6 @@ cmp -s "$root_dir/templates/.gitignore" "$test_dir/app/.gitignore"
 rg -q '^/test/$' "$root_dir/.gitignore"
 rg -q '^/plans/$' "$test_dir/app/.gitignore"
 rg -q '^/spec/$' "$test_dir/app/.gitignore"
-rg -q '^/docs/\*\*$' "$test_dir/app/.gitignore"
-rg -q '^!/docs/SECURITY\.md$' "$test_dir/app/.gitignore"
+[[ -f "$test_dir/app/CONTEXT.md" ]]
 
 printf 'PASS: generated app quality checks can run\n'

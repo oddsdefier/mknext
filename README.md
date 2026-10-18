@@ -26,12 +26,13 @@ A generated app uses:
 - Gitleaks
 - GitHub Actions security and quality checks
 - A `main` branch protection setup script
+- Complete agent rules and project context
 
 Generated apps do not use ESLint or Prettier.
 Oxfmt sorts Tailwind CSS classes in markup and class helper calls.
 The `cn` package merges conditional Tailwind CSS classes.
 React Grab is installed as a development tool.
-Their pre-commit hook scans staged changes for secrets.
+The pre-commit hook scans staged changes for secrets.
 
 ## Install
 
@@ -46,7 +47,7 @@ rm "$installer"
 
 The installer clones the newest release tag. Git verifies the content.
 
-The installer prints a PATH instruction when `~/.local/bin` is not on `PATH`.
+The installer explains how to add `~/.local/bin` to `PATH` when needed.
 
 Check the install:
 
@@ -74,11 +75,13 @@ mknext uninstall
 The uninstall command asks first. Use `--yes` to skip the question.
 It removes the command and its files. Generated apps stay unchanged.
 
-Synchronize project configuration, workflows, and tool pins:
+Synchronize mknext-owned configuration, workflows, and tool pins:
 
 ```bash
 mknext sync
 ```
+
+`sync` preserves application-owned files and custom package scripts.
 
 ## Create an app
 
@@ -102,7 +105,7 @@ mknext my-app --preset PRESET_CODE --yes
 
 The longer `mknext create --name my-app --yes` form also works.
 
-The command stops if the target path exists.
+The command stops if the target path already exists.
 
 ## Migrate an existing project
 
@@ -118,7 +121,7 @@ It preserves npm/pnpm selection and updates common package scripts.
 It preserves source files, ignore files, and supply-chain settings.
 Oxfmt converts existing Prettier settings.
 Existing Oxlint and Oxfmt configurations stay unchanged.
-Backups preserve replaced configs, package data, and lockfiles.
+Backups keep replaced configs, package data, and lockfiles.
 Find them under `.mknext-migrate-backups/`.
 Migration restores project files after an installation failure.
 Review custom ESLint rules manually against the backed-up configuration.
@@ -149,23 +152,23 @@ Use `mknext doctor --update` to update direct dependencies.
 - `pnpm audit`
 - Gitleaks
 
-Any failed check makes local CI fail.
+Local CI fails if any check fails.
 
-`audit` runs an automated security gate scan across the project:
+`audit` checks the project for security problems:
 
-- Secret Scanning: Scans for committed secrets via Gitleaks
-- Dependency Audit: Checks for known vulnerabilities using `pnpm audit`
-- Environment Hygiene: Verifies no sensitive `.env*` files are tracked in Git
-- Client Isolation: Ensures server secrets are never referenced in `'use client'` components
-- CI Security: Validates least-privilege workflow permissions in `.github/workflows`
-- Supply Chain: Verifies the 24-hour package quarantine delay (`minimumReleaseAge: 1440`)
-- Shell Protection: Verifies or installs Socket.dev safe wrapper aliases (`mknext audit --setup-safe-install`) with automatic shell config backup (`~/.bashrc.mknext.bak` / `~/.zshrc.mknext.bak`)
-- Claude Environment Guard: On by default; needs `jq` and `realpath`, plus `bwrap` and `socat` on Linux. Turn it off with `MKNEXT_ENABLE_CLAUDE_GUARD=0`
-- Codex Environment Guard: If `.codex` is present, ensures production environment read hooks are active and non-overwritten
+- Gitleaks scans for committed secrets.
+- `pnpm audit` checks for known dependency flaws.
+- The scan checks whether Git tracks sensitive `.env*` files.
+- The scan checks `'use client'` components for server secrets.
+- The scan checks workflow permissions in `.github/workflows`.
+- The scan checks the 3-day package delay (`minimumReleaseAge: 4320`).
+- The scan checks Socket.dev safe install aliases. Run `mknext audit --setup-safe-install` to install them. This command backs up shell settings to `~/.bashrc.mknext.bak` or `~/.zshrc.mknext.bak`.
+- The Claude environment guard runs by default. It needs `jq` and `realpath`. On Linux, it also needs `bwrap` and `socat`. Set `MKNEXT_ENABLE_CLAUDE_GUARD=0` to turn it off.
+- If `.codex` exists, the scan checks its production environment read hooks. It checks that no other hook replaced them.
 
 ## Protect the GitHub repository
 
-Each generated app has a GitHub Actions workflow. It runs dependency audits, Gitleaks, all quality checks, and the production build.
+Each generated app has a GitHub Actions workflow. It runs dependency audits, Gitleaks, quality checks, and the production build.
 
 After the first workflow run, protect `main`:
 

@@ -65,7 +65,7 @@ install_claude_guard() {
 
   node "$ROOT_DIR/lib/merge-claude-settings.mjs" "$settings_file"
 
-  log_success "Appended Claude production env guard hooks to $settings_file"
+  log_success "Added Claude production environment guard hooks to $settings_file"
 }
 
 verify_claude_guard() {

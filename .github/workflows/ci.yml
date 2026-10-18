@@ -50,3 +50,55 @@ jobs:
         run: pnpm test
       - name: Verify migration with project-pinned package managers
         run: bash tests/real_migrate_smoke.sh
+
+  macos:
+    name: macOS tests
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install system tools
+        run: |
+          brew install bash coreutils jq ripgrep shellcheck
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+      - name: Configure Git
+        run: |
+          git config --global user.name 'mknext tests'
+          git config --global user.email 'tests@mknext.invalid'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run shell tests
+        run: pnpm test
+
+  real-scaffold:
+    name: real scaffold
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Configure Git
+        run: |
+          git config --global user.name 'mknext tests'
+          git config --global user.email 'tests@mknext.invalid'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Create and validate a real Generated app
+        run: bash tests/real_scaffold_smoke.sh

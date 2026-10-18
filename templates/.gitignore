@@ -49,7 +49,3 @@ next-env.d.ts
 /specs/
 /scratch/
 *.plan.md
-/docs/**
-!/docs/
-!/docs/SECURITY.md
-

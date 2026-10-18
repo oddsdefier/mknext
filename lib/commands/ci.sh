@@ -40,7 +40,7 @@ run_ci() {
 
   if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 ]]; then
     ui_banner
-    log_step "Running $MKNEXT_CONFIG_CI CI quality gates in parallel..."
+    log_step "Running $MKNEXT_CONFIG_CI CI checks in parallel..."
   fi
 
   start_ci_job lint "$project_bin/oxlint" .

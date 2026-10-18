@@ -1,26 +1,88 @@
 # Project Instructions
 
-- Read `CONTEXT.md` when present.
+## Hard rules
+
+- Read `CONTEXT.md` before changing project files.
 - Keep changes minimal and focused.
-- Run project validation scripts before completion.
-- Do not commit, push, or open pull requests unless requested.
-- Never use `--no-verify` or `-n` on git commands.
-- Never add AI attribution to commits or pull requests.
-- Fill all required sections in `.github/pull_request_template.md` on pull requests.
+- Preserve user changes and unrelated files.
+- Never lower `minimumReleaseAge`.
+- Never remove `trustPolicy` settings.
+- Never edit generated artifacts directly.
+- Never bypass Git hooks.
+- Never add AI attribution.
+- Stop after repeated failures.
+- Report unresolved errors honestly.
 
-## Terse Output Style (Mandatory)
-Write in terse ASD-STE100.
+## Design
 
-1. **Sentence length**: Strictly under 12 words per sentence. Count words before writing. Split longer sentences.
-2. **Grammar**: Active voice only. One clause per sentence.
-3. **Vocabulary**: ASD-STE100 plain English. No jargon.
-4. **Zero filler**: Never write greetings, apologies, confirmations, or meta-summaries.
-5. **Code and commands**: Emit raw snippets or shell commands directly.
-6. **Prose limit**: Maximum two sentences per response.
+- Keep module interfaces small. Put related behavior inside each module.
+- Keep domain rules inside their owning module.
+- Make callers and tests use one interface.
+- Accept dependencies through interfaces.
+- Add seams only when behavior varies.
+- Remove pass-through modules without leverage.
+- Avoid speculative abstractions and duplicated rules.
 
-### Examples
-User: "How do I fix the lint error?"
-Assistant: "Run `pnpm lint --fix`. Check remaining errors manually."
+## Implementation
 
-User: "Where is the database client created?"
-Assistant: "Find the database client in `lib/db.ts` line 12."
+- Implement the specification.
+- Do not implement assumptions.
+- Make the smallest coherent change.
+- Search existing code before adding code.
+- Reuse installed libraries where possible.
+- Use test-driven development when correct seams exist.
+- Do not commit or push without approval.
+
+## Validation
+
+- Run the narrowest useful checks first.
+- Run broader checks for risky changes.
+- Run all relevant tests before completion.
+- Never claim success after skipped required checks.
+
+## GitHub Actions
+
+- Finish local validation before pushing.
+- Batch related commits into few pushes.
+- Open review-ready pull requests.
+- Never depend on draft status for CI control.
+- Require final CI success before completion.
+
+## Debugging
+
+1. Reproduce the exact reported symptom.
+2. Minimize the reproduction before forming theories.
+3. Rank three falsifiable hypotheses.
+4. Test one variable at a time.
+5. Add a regression test first.
+6. Remove temporary instrumentation afterward.
+7. Recheck the original reproduction.
+
+## Review
+
+- Review Standards separately.
+- Review Spec separately.
+- Report findings with exact file evidence.
+
+## Git conventions
+
+- Use Conventional Commits.
+- Use imperative commit summaries.
+- Use focused branch names.
+- Split unrelated changes.
+- Use every pull request template heading.
+
+## Completion report
+
+- State what changed.
+- State what passed.
+- State every failed or skipped check.
+- State unresolved risks.
+- Verify branch, commit, and pull request names.
+
+## Writing style
+
+- Write terse ASD-STE100.
+- Keep sentences under twelve words.
+- Use active voice.
+- Omit filler.

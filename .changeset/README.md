@@ -8,7 +8,7 @@ Run:
 pnpm changeset
 ```
 
-Apply pending versions with:
+Apply pending version changes:
 
 ```bash
 pnpm changeset:version

@@ -1,6 +1,6 @@
 # Security checks
 
-Install Gitleaks before you run local CI. See the official Gitleaks installation guide.
+Install Gitleaks before you run local CI. Follow the official installation guide.
 
 Run all local checks:
 
@@ -8,11 +8,11 @@ Run all local checks:
 mknext ci
 ```
 
-The pre-commit hook scans staged changes with Gitleaks. It stops the commit when it finds a secret.
+The pre-commit hook uses Gitleaks to scan staged changes. It stops commits containing secrets.
 
-The local CI command runs `pnpm audit` and scans the Git history with Gitleaks. Any finding stops the command.
+Local CI runs `pnpm audit`. Gitleaks scans Git history. A failed check stops the command.
 
-The GitHub Actions workflow runs the same security gates for pull requests and pushes to `main`. An organization-owned repository must define the `GITLEAKS_LICENSE` secret. A personal repository does not need this secret.
+GitHub Actions runs these checks on pull requests and pushes to `main`. Organization-owned repositories need the `GITLEAKS_LICENSE` secret. Personal repositories do not need it.
 
 After you create the GitHub repository and run its workflow once, protect `main`:
 
@@ -20,4 +20,4 @@ After you create the GitHub repository and run its workflow once, protect `main`
 ./scripts/configure-main-protection.sh OWNER/REPOSITORY
 ```
 
-The script requires the `security` and `quality` checks, one approval, resolved conversations, and current branch status. It blocks force pushes and branch deletion.
+The script requires the `security` and `quality` checks. It also requires one approval, resolved conversations, and current branch status. It blocks force pushes and branch deletion.

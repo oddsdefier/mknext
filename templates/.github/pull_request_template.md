@@ -8,4 +8,4 @@ State what changed and why.
 
 ## Risks
 
-State known risks. Write `None` when no risk is known.
+State known risks. Write `None` if you know of none.

@@ -90,7 +90,14 @@ check_workflow_permissions() {
 
 check_supply_chain_delay() {
   [[ -f pnpm-workspace.yaml ]] || return 1
-  grep -q -E '^minimumReleaseAge:[[:space:]]*1440([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
+  grep -q -E '^minimumReleaseAge:[[:space:]]*4320([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
+  grep -q -E '^minimumReleaseAgeStrict:[[:space:]]*false([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
+}
+
+check_trust_policy() {
+  [[ -f pnpm-workspace.yaml ]] || return 1
+  grep -q -E '^trustPolicy:[[:space:]]*no-downgrade([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
+  grep -q -E '^trustPolicyIgnoreAfter:[[:space:]]*43200([[:space:]]*#.*)?$' pnpm-workspace.yaml || return 1
 }
 
 detect_shell_rc() {
@@ -166,7 +173,7 @@ run_audit() {
 
   if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 ]]; then
     ui_banner
-    log_step 'Running automated security audit...'
+    log_step 'Checking project security...'
     printf '\n'
   fi
 
@@ -186,7 +193,8 @@ run_audit() {
   else
     local st=$?
     if ((st == 2)); then
-      checks+=('Secret Scanning: Gitleaks not on PATH (skipped)')
+      problems+=('Secret Scanning: Gitleaks is required but missing from PATH')
+      failed=1
     else
       problems+=('Secret Scanning: Credentials or secrets detected in Git history')
       failed=1
@@ -198,7 +206,8 @@ run_audit() {
   else
     local st=$?
     if ((st == 2)); then
-      checks+=('Dependency Audit: pnpm not on PATH (skipped)')
+      problems+=('Dependency Audit: pnpm is required but missing from PATH')
+      failed=1
     else
       problems+=('Dependency Audit: Known vulnerabilities detected in dependency graph')
       failed=1
@@ -227,9 +236,16 @@ run_audit() {
   fi
 
   if check_supply_chain_delay; then
-    checks+=('Supply Chain: 24-hour minimum release age delay active (pnpm-workspace.yaml)')
+    checks+=('Supply Chain: 3-day minimum release age delay active (pnpm-workspace.yaml)')
   else
-    problems+=('Supply Chain: minimumReleaseAge not set to 1440 in pnpm-workspace.yaml')
+    problems+=('Supply Chain: release-age settings are invalid in pnpm-workspace.yaml')
+    failed=1
+  fi
+
+  if check_trust_policy; then
+    checks+=('Supply Chain: Publisher trust downgrades rejected (pnpm-workspace.yaml)')
+  else
+    problems+=('Supply Chain: publisher trust settings are invalid in pnpm-workspace.yaml')
     failed=1
   fi
 
@@ -240,7 +256,7 @@ run_audit() {
   else
     suggestions+=('Supply Chain Firewall: Safe wrapper for "pnpm install" is not active')
     suggestions+=('  Run: mknext audit --setup-safe-install')
-    suggestions+=('  (Protects pnpm/npm by intercepting packages and blocking malware before install scripts execute)')
+    suggestions+=('  (Scans packages before npm or pnpm installs them)')
   fi
 
   if claude_guard_requested; then
@@ -265,27 +281,27 @@ run_audit() {
   fi
 
   if [[ -t 1 && "${MKNEXT_QUIET:-0}" -eq 0 ]]; then
-    printf '%sSecurity Gates:%s\n' "$C_BOLD" "$C_RESET"
+    printf '%sSecurity checks:%s\n' "$C_BOLD" "$C_RESET"
     for check in "${checks[@]}"; do
       printf '  %s %s\n' "$ICON_SUCCESS" "$check"
     done
     if ((${#problems[@]} > 0)); then
-      printf '\n%sSecurity Issues Found:%s\n' "$C_BOLD" "$C_RESET"
+      printf '\n%sSecurity issues:%s\n' "$C_BOLD" "$C_RESET"
       for prob in "${problems[@]}"; do
         printf '  %s %s%s%s\n' "$ICON_FAIL" "$C_RED" "$prob" "$C_RESET"
       done
     fi
     if ((${#suggestions[@]} > 0)); then
-      printf '\n%sSecurity Recommendations:%s\n' "$C_BOLD$C_CYAN" "$C_RESET"
+      printf '\n%sSuggested fixes:%s\n' "$C_BOLD$C_CYAN" "$C_RESET"
       for sugg in "${suggestions[@]}"; do
         printf '  %s %s%s%s\n' "$ICON_INFO" "$C_CYAN" "$sugg" "$C_RESET"
       done
     fi
     printf '\n'
     if ((failed == 0)); then
-      log_success 'Audit PASSED: Your project passes security gates!'
+      log_success 'Security checks passed.'
     else
-      log_error 'Audit FAILED: Please resolve the issues above.'
+      log_error 'Security checks failed. Fix the issues above.'
     fi
     printf '\n'
   fi

@@ -21,7 +21,12 @@ MKNEXT_CHECK_LOG="$check_log" \
 rg -q '^corepack prepare pnpm@12.14.0 --activate$' "$check_log"
 rg -q '^pnpm dlx shadcn@4.21.5 init --preset b67ek3WsVs --template next --name app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
 rg -q '^preset=b67ek3WsVs$' "$test_dir/app/.mknext"
-rg -q '^minimumReleaseAge: 1440$' "$test_dir/app/pnpm-workspace.yaml"
+rg -q '^minimumReleaseAge: 4320$' "$test_dir/app/pnpm-workspace.yaml"
 rg -q '^minimumReleaseAgeStrict: false$' "$test_dir/app/pnpm-workspace.yaml"
+rg -q '^trustPolicy: no-downgrade$' "$test_dir/app/pnpm-workspace.yaml"
+if rg -q '^[A-Za-z0-9_]+=[~^*]' "$root_dir/versions.env"; then
+  printf 'FAIL: versions.env contains a floating package version\n' >&2
+  exit 1
+fi
 
 printf 'PASS: create applies pnpm defaults before install\n'

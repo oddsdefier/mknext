@@ -104,7 +104,7 @@ create_shadcn_app() {
   log_info "  → Downloading Next.js template and shadcn preset ($MKNEXT_CONFIG_PRESET)..."
   (
     cd "$(dirname "$MKNEXT_CREATE_TARGET")" || exit 1
-    PNPM_CONFIG_MINIMUM_RELEASE_AGE=1440 \
+    PNPM_CONFIG_MINIMUM_RELEASE_AGE=4320 \
       PNPM_CONFIG_MINIMUM_RELEASE_AGE_STRICT=false \
       pnpm dlx "shadcn@$SHADCN_VERSION" init \
       --preset "$MKNEXT_CONFIG_PRESET" \
@@ -152,7 +152,7 @@ create_install_base_dependencies() {
 }
 
 create_minimum_release_config() {
-  log_info 'NOTICE: minimum release age is active and non-blocking'
+  log_info 'Minimum release age is active. Installs remain unblocked.'
 }
 
 create_install_pinned_tools() {
@@ -246,9 +246,10 @@ create_pull_request_files() {
   fi
 }
 
-create_agents_stub() {
+create_project_guidance() {
   copy_template_file AGENTS.md
   copy_template_file CLAUDE.md
+  copy_template_file CONTEXT.md
 }
 
 create_vercel_config() {
@@ -434,18 +435,18 @@ run_create() {
     run_create_step 3 'Create the app directory and marker' create_app_directory
     run_create_step 4 'Scaffold Next.js with shadcn' create_shadcn_app
     run_create_step 5 'Install base dependencies' create_install_base_dependencies
-    run_create_step 6 'Confirm the minimum release config' create_minimum_release_config
+    run_create_step 6 'Check minimum release age' create_minimum_release_config
     run_create_step 7 'Apply pinned tool versions' create_install_pinned_tools
     run_create_step 8 'Configure oxlint and anti-slop' create_oxlint
     run_create_step 9 'Configure oxfmt' create_oxfmt
     run_create_step 10 'Add the Vitest test harness' create_vitest
     run_create_step 11 'Add react-doctor' create_react_doctor
     run_create_step 12 'Add Knip' create_knip
-    run_create_step 13 'Set complexity gates' create_complexity_gates
+    run_create_step 13 'Set complexity checks' create_complexity_gates
     run_create_step 14 'Add Husky and lint-staged' create_git_hooks
     run_create_step 15 'Add Changesets' create_changesets
     run_create_step 16 'Add pull request, CI, and security files' create_pull_request_files
-    run_create_step 17 'Write the AGENTS.md stub' create_agents_stub
+    run_create_step 17 'Write project guidance' create_project_guidance
     run_create_step 18 'Write the Vercel region' create_vercel_config
     run_create_step 19 'Configure optional Tailscale origins' create_tailscale
     run_create_step 20 'Set the main branch and first commit' create_git_setup

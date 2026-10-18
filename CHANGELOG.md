@@ -1,12 +1,19 @@
 # mknext
 
+## 1.4.0
+
+### Minor Changes
+
+- Add project context, clearer checks, and a Pele project diagram.
+  Expand generated-app and repository CI checks.
+
 ## 1.3.1
 
 ### Patch Changes
 
 - 43cc73a: Fix migration installation flags for project-pinned pnpm 12.3.1.
   Use `--no-prod` instead of the unsupported `--prod=false` form.
-  Verify production and development dependencies under production NODE_ENV.
+  Check production and development dependencies under production NODE_ENV.
   Test older pnpm, current pinned pnpm, and npm in CI.
   Preserve project package-manager pins and release-age policy settings.
 
@@ -16,14 +23,14 @@
 
 - Add `mknext --migrate` for existing npm and pnpm projects.
   Preserve source files and convert existing Prettier preferences.
-  Support previews, configuration backups, rollback, and safe repeat runs.
+  Support previews, configuration backups, rollback, and repeat runs.
 
 ### Patch Changes
 
 - Eject shadcn styles to remove the vulnerable braces dependency chain.
-  Verify generated-app security, production builds, and React Doctor compatibility.
+  Check generated-app security, production builds, and React Doctor compatibility.
 - Update Next.js, React, pnpm, Oxlint, and the pinned tool stack.
-  Refresh shell-quote to remove its critical command-injection advisory.
+  Update shell-quote to fix its critical command-injection flaw.
 
 ## 1.2.0
 
@@ -55,7 +62,7 @@
   Update moved to the newest release, not the commit it shipped with.
   Both commands now need `git` instead of `curl` and `sha256sum`.
   
-  A release workflow now tags `main` when `VERSION` changes.
+  The release workflow now tags `main` when `VERSION` changes.
 
 ## 1.1.0
 

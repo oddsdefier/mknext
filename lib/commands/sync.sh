@@ -98,11 +98,6 @@ run_sync() {
   sync_copy_template doctor.config.ts
   sync_copy_template knip.json
   sync_copy_template oxlint.complexity.config.ts
-  sync_copy_template next.config.ts
-  sync_copy_template pnpm-workspace.yaml
-  sync_copy_template tsconfig.json
-  sync_copy_template lib/utils.ts
-  sync_copy_template .gitignore
 
   if [[ -d "$ROOT_DIR/templates/tools/oxlint/anti-slop" ]]; then
     if ((MKNEXT_SYNC_DRY_RUN == 0)); then
@@ -175,7 +170,7 @@ run_sync() {
       }
     fi
     sync_write_marker
-    log_success 'Project synchronized with mknext templates!'
+    log_success 'Updated project files from mknext templates.'
   else
     log_info 'DRY RUN sync: update package pins and format files'
     sync_write_marker

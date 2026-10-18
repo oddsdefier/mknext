@@ -100,7 +100,7 @@ ui_banner() {
   init_colors
   local version
   version=$(<"$ROOT_DIR/VERSION")
-  printf '\n%s▲ mknext%s %sv%s%s — %sProduction-grade Next.js App Generator%s\n\n' \
+  printf '\n%s▲ mknext%s %sv%s%s — %sNext.js app generator%s\n\n' \
     "$C_BOLD$C_CYAN" "$C_RESET" "$C_DIM" "$version" "$C_RESET" "$C_DIM" "$C_RESET"
 }
 
@@ -161,13 +161,13 @@ ui_success_summary() {
     "$C_BOLD" "$C_GREEN" "$C_RESET" \
     "$C_BOLD" "$name" "$C_RESET" \
     "$C_DIM" "$target" "$C_RESET"
-  printf '%sInside that directory, you can run:%s\n\n' "$C_BOLD" "$C_RESET"
+  printf '%sRun these commands in that directory:%s\n\n' "$C_BOLD" "$C_RESET"
   printf '  %spnpm dev%s\n' "$C_CYAN" "$C_RESET"
   printf '    Starts the Next.js development server.\n\n'
   printf '  %smknext doctor%s\n' "$C_CYAN" "$C_RESET"
-  printf '    Diagnoses environment and updates dependencies.\n\n'
+  printf '    Checks the setup. Add --update to update dependencies.\n\n'
   printf '  %smknext ci%s\n' "$C_CYAN" "$C_RESET"
-  printf '    Runs local quality, security, and test checks.\n\n'
+  printf '    Runs lint, security, and test checks.\n\n'
   printf '%sGet started:%s\n' "$C_BOLD" "$C_RESET"
   printf '  %scd %s && pnpm dev%s\n\n' "$C_CYAN" "$name" "$C_RESET"
 }

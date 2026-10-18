@@ -10,10 +10,10 @@ Expect a first reply in seven days.
 
 ## Supported versions
 
-Only the latest release gets fixes.
+We fix only the latest release.
 
 ## Scope
 
 The installer verifies a pinned commit and its SHA-256 checksum.
-Report any way to make mknext install unverified source.
-Report any way to make the production environment guards pass without protection.
+Report any way to make mknext install source without verification.
+Report any way to bypass production environment guards.

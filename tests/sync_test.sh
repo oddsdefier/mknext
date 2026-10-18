@@ -27,17 +27,28 @@ PATH="$root_dir/tests/fakes:$PATH" \
     "$root_dir/bin/mknext" sync --quiet
 )
 
-# Test 3: sync backs up overwritten files and reports complete dry runs
 (
   cd "$test_dir/app"
   printf 'custom config\n' >next.config.ts
+  printf '{"custom":"typescript"}\n' >tsconfig.json
+  printf 'export const customUtility = true;\n' >lib/utils.ts
+  printf 'custom-output/\n' >>.gitignore
+  printf '\npackages:\n  - apps/*\n' >>pnpm-workspace.yaml
+  node --input-type=module <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises';
+const packageData = JSON.parse(await readFile('package.json', 'utf8'));
+packageData.scripts.custom = 'node custom.mjs';
+await writeFile('package.json', `${JSON.stringify(packageData, null, 2)}\n`);
+NODE
   dry_output=$(PATH="$root_dir/tests/fakes:$PATH" "$root_dir/bin/mknext" sync --dry-run)
   rg -q 'vercel.json' <<<"$dry_output"
   PATH="$root_dir/tests/fakes:$PATH" "$root_dir/bin/mknext" sync --quiet
-  compgen -G '.mknext-sync-backups/*/next.config.ts' >/dev/null || {
-    printf 'FAIL: sync did not back up next.config.ts\n' >&2
-    exit 1
-  }
+  rg -q '^custom config$' next.config.ts
+  rg -q '"custom":"typescript"' tsconfig.json
+  rg -q 'customUtility' lib/utils.ts
+  rg -q '^custom-output/$' .gitignore
+  rg -q '^  - apps/\*$' pnpm-workspace.yaml
+  node -e "const p=require('./package.json'); process.exit(p.scripts.custom === 'node custom.mjs' ? 0 : 1)"
 )
 
 # Test 4: formatter errors fail sync

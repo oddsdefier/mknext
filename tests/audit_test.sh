@@ -37,6 +37,29 @@ cp "$root_dir/tests/fakes/check-tool" "$test_dir/bin/gitleaks"
     "$root_dir/bin/mknext" audit --quiet
 )
 
+(
+  cd "$test_dir/app"
+  if PATH="/usr/bin:/bin" \
+    "$root_dir/bin/mknext" audit --quiet 2>/dev/null; then
+    printf 'FAIL: audit should fail without pnpm and Gitleaks\n' >&2
+    exit 1
+  fi
+)
+
+for setting in minimumReleaseAgeStrict trustPolicyIgnoreAfter; do
+  (
+    cd "$test_dir/app"
+    sed "/^${setting}:/d" pnpm-workspace.yaml >pnpm-workspace.yaml.tmp
+    mv pnpm-workspace.yaml.tmp pnpm-workspace.yaml
+    if PATH="$test_dir/bin:$root_dir/tests/fakes:$PATH" \
+      "$root_dir/bin/mknext" audit --quiet 2>/dev/null; then
+      printf 'FAIL: audit should require %s\n' "$setting" >&2
+      exit 1
+    fi
+    cp "$root_dir/templates/pnpm-workspace.yaml" pnpm-workspace.yaml
+  )
+done
+
 # Test 3: audit detects tracked .env file
 (
   cd "$test_dir/app"

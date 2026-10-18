@@ -1,5 +1,9 @@
 # mknext architecture
 
+![mknext command and generated app flow](mknext-flow.svg)
+
+[Pele](https://pele.run/) renders the [diagram source](mknext-flow.mmd).
+
 ## Folder layout
 
 ```text
@@ -72,7 +76,8 @@ The command runs one shared list of 20 steps.
 A dry run prints the same list.
 A dry run does not call the step actions.
 
-The scaffold step runs `shadcn@latest init` with the Next.js template and the configured preset.
+The scaffold step runs the pinned shadcn version.
+It uses the Next.js template and configured preset.
 The command passes the active, non-blocking pnpm release-age settings to the scaffold install.
 It then removes the generated ESLint and Prettier packages and files.
 The base install runs again after mknext writes the pinned package manager and pnpm settings.
@@ -86,6 +91,7 @@ The final create step formats the completed app.
 The create path does not write `.npmrc`.
 It keeps the pnpm minimum release age active.
 It makes the check non-blocking when no mature pinned version exists.
+It writes exact dependency versions into `package.json`.
 
 ## CI path
 
@@ -116,15 +122,25 @@ The update enforces the minimum release age and does not change its config.
 
 ## Audit path
 
-`audit` performs automated project-wide security gate checks:
+`audit` runs these project security checks:
 
 - Gitleaks scans commit history and local directory for plaintext secrets.
 - `pnpm audit` verifies dependency graphs against published CVE advisories.
-- Git environment hygiene ensures `.env*` files are never tracked or committed.
-- Static regex analysis ensures client components marked `'use client'` do not reference sensitive server variables like `DATABASE_URL` or secret keys.
-- CI permissions scanning ensures workflows explicitly define least-privilege permissions.
-- Supply chain verification confirms the 24-hour quarantine delay (`minimumReleaseAge: 1440`).
-- Shell integration with `--setup-safe-install` creates a backup (`.bashrc.mknext.bak` / `.zshrc.mknext.bak`) and injects Socket.dev safe wrappers (`@socketsecurity/cli`) to intercept malware during package installs.
+- The Git check detects tracked `.env*` files.
+- The audit checks `'use client'` files for server variables such as `DATABASE_URL` and secret keys.
+- The audit checks workflows for explicit permissions.
+- The audit checks the three-day release delay (`minimumReleaseAge: 4320`).
+- `--setup-safe-install` backs up shell configuration. It creates `.bashrc.mknext.bak` or `.zshrc.mknext.bak`. It adds Socket.dev wrappers (`@socketsecurity/cli`) to check package installs for malware.
+
+Missing pnpm or Gitleaks makes the audit fail.
+The audit checks every generated supply-chain setting.
+
+## Sync path
+
+`sync` updates mknext-owned configuration files.
+It preserves application-owned files and custom package scripts.
+Application-owned files include Next.js and TypeScript configuration.
+They also include `.gitignore`, `pnpm-workspace.yaml`, and `lib/utils.ts`.
 
 ## Tool boundaries
 

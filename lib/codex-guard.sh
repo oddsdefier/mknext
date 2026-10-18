@@ -64,7 +64,7 @@ if (!seenFeatures) lines.push('', '[features]', 'hooks = true');
 fs.writeFileSync(file, `${lines.join('\n').replace(/\n*$/, '')}\n`);
 NODE
 
-  log_success "Appended Codex production env guard hooks to $hooks_file"
+  log_success "Added Codex production environment guard hooks to $hooks_file"
   log_info 'Codex asks you to approve these hooks on the first interactive run'
 }
 
