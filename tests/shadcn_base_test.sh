@@ -20,6 +20,11 @@ MKNEXT_CHECK_LOG="$check_log" \
   "$root_dir/bin/mknext" create --name "$test_dir/app" --preset customPreset123 --yes --quiet
 
 rg -q '^pnpm dlx shadcn@4.21.5 init --preset customPreset123 --template next --name app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
+rg -q '^pnpm dlx shadcn@4.21.5 eject --yes$' "$check_log" || {
+  printf 'FAIL: create retains the vulnerable shadcn CLI dependency\n' >&2
+  exit 1
+}
+node -e "const p=require(process.argv[1]); if (p.dependencies?.shadcn || p.devDependencies?.shadcn) process.exit(1)" "$test_dir/app/package.json"
 if rg -q '^pnpm dlx create-next-app@' "$check_log"; then
   printf 'FAIL: create still calls create-next-app\n' >&2
   exit 1
@@ -35,5 +40,17 @@ MKNEXT_CHECK_LOG="$check_log" \
 
 rg -q '^pnpm dlx shadcn@4.21.5 init --preset userPreset456 --template next --name config-app\.mknext\.[A-Za-z0-9]+ --yes$' "$check_log"
 rg -q '^preset=userPreset456$' "$test_dir/config-app/.mknext"
+
+if MKNEXT_FAKE_SHADCN_EJECT_FAIL=1 \
+  PATH="$root_dir/tests/fakes:$PATH" \
+  "$root_dir/bin/mknext" create --name "$test_dir/eject-failed" --yes --quiet; then
+  printf 'FAIL: create accepted a shadcn eject failure\n' >&2
+  exit 1
+fi
+[[ ! -e "$test_dir/eject-failed" ]]
+if compgen -G "$test_dir/eject-failed.mknext.*" >/dev/null; then
+  printf 'FAIL: create left files after a shadcn eject failure\n' >&2
+  exit 1
+fi
 
 printf 'PASS: shadcn scaffolds the app with the configured preset\n'

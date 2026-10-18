@@ -21,6 +21,22 @@ if [[ "${1:-}" == 'install' && -n "${MKNEXT_EXPECT_PACKAGE_MANAGER:-}" ]]; then
   fi
 fi
 
+if [[ "${1:-}" == 'dlx' && "${2:-}" == "shadcn@${MKNEXT_FAKE_SHADCN_VERSION:-4.21.5}" && "${3:-}" == 'eject' ]]; then
+  if [[ "${MKNEXT_FAKE_SHADCN_EJECT_FAIL:-0}" == 1 ]]; then
+    printf 'shadcn eject failed\n' >&2
+    exit 1
+  fi
+  node --input-type=module <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises';
+
+const packageData = JSON.parse(await readFile('package.json', 'utf8'));
+delete packageData.dependencies?.shadcn;
+delete packageData.devDependencies?.shadcn;
+await writeFile('package.json', `${JSON.stringify(packageData, null, 2)}\n`);
+NODE
+  exit 0
+fi
+
 if [[ "${1:-}" == 'dlx' && "${2:-}" == "shadcn@${MKNEXT_FAKE_SHADCN_VERSION:-4.21.5}" && "${3:-}" == 'init' ]]; then
   project_name=''
   preset=''
@@ -61,6 +77,7 @@ if [[ "${1:-}" == 'dlx' && "${2:-}" == "shadcn@${MKNEXT_FAKE_SHADCN_VERSION:-4.2
   printf 'export default {}\n' >"$project_name/next.config.ts"
   printf 'node_modules\n.next\n' >"$project_name/.gitignore"
   printf 'export default function Page(){return <main>Hello</main>}\n' >"$project_name/app/page.tsx"
+  printf 'export default function RootLayout({ children }) { return children; }\n' >"$project_name/app/layout.tsx"
   printf 'export function cn() {}\n' >"$project_name/lib/utils.ts"
   printf '{"compilerOptions":{"noEmit":true},"include":["next-env.d.ts","**/*.ts","**/*.tsx"]}\n' >"$project_name/tsconfig.json"
   printf '{"style":"base-nova","tailwind":{"config":"","css":"app/globals.css","baseColor":"neutral","cssVariables":true},"rsc":true,"tsx":true,"iconLibrary":"hugeicons","aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui","lib":"@/lib","hooks":"@/hooks"}}\n' >"$project_name/components.json"

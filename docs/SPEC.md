@@ -101,6 +101,13 @@ The generated app uses Next.js App Router.
 It enables React Compiler.
 It uses Tailwind CSS and shadcn/ui. The default preset uses Base UI and Hugeicons.
 
+After scaffolding, the pinned shadcn CLI runs `eject --yes`.
+This inlines shadcn styles and removes its CLI dependency.
+This removes the vulnerable `braces` dependency chain from generated apps.
+Future shadcn stylesheet updates need a manual refresh.
+Existing apps can run the pinned CLI's `eject --yes` command.
+`sync` preserves application styles and does not perform this migration.
+
 The generated app does not use ESLint.
 The generated app does not use Prettier.
 

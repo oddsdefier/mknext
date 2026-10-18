@@ -121,7 +121,24 @@ create_shadcn_app() {
   copy_template_file tsconfig.json
   copy_template_file .gitignore
   copy_template_file lib/utils.ts
+  create_root_metadata
   node "$ROOT_DIR/lib/update-package.mjs" "$MKNEXT_CREATE_TARGET" --package-manager-only
+  run_in_app pnpm dlx "shadcn@$SHADCN_VERSION" eject --yes
+}
+
+create_root_metadata() {
+  local layout="$MKNEXT_CREATE_TARGET/app/layout.tsx" name block
+  [[ -f "$layout" ]] || return 0
+  if grep -q 'export const metadata' "$layout"; then
+    return 0
+  fi
+  name=$(basename "$MKNEXT_CREATE_FINAL_TARGET")
+  block="export const metadata = {\n  title: '$name',\n  description: 'Created with mknext.',\n};\n"
+  awk -v block="$block" '
+    /^export default function RootLayout/ && !done { print block; done = 1 }
+    { print }
+  ' "$layout" >"$layout.tmp"
+  mv "$layout.tmp" "$layout"
 }
 
 create_install_base_dependencies() {
