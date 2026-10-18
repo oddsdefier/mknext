@@ -48,3 +48,5 @@ jobs:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
       - name: Run shell tests
         run: pnpm test
+      - name: Verify migration with project-pinned package managers
+        run: bash tests/real_migrate_smoke.sh
