@@ -1,10 +1,25 @@
 flowchart TD
   User[Developer] --> CLI[mknext CLI]
-  Config[Config and version pins] --> CLI
+  Config[Config and versions.env] --> CLI
   CLI --> Create[create]
+  CLI --> Migrate[--migrate]
   CLI --> Maintain[doctor / sync / audit / ci]
   Create --> Base[shadcn Next.js base]
-  Base --> Templates[Apply templates and package scripts]
-  Templates --> App[Generated app]
+  Base --> Package[Pin packages and scripts]
+  Package --> Templates
+  subgraph Templates[templates/]
+    AppFiles[app/, lib/, next.config.ts]
+    Quality[Oxlint, Oxfmt, Vitest, Knip]
+    Security[Hooks, guards, Gitleaks]
+    Workflow[GitHub Actions, branch protection]
+    Guidance[AGENTS.md, CLAUDE.md, CONTEXT.md]
+  end
+  AppFiles --> App[Generated app]
+  Quality --> App
+  Security --> App
+  Workflow --> App
+  Guidance --> App
+  Migrate --> Existing[Existing npm or pnpm app]
+  Existing --> Convert[Replace ESLint and Prettier config]
+  Convert --> Migrated[Migrated app]
   Maintain --> App
-  App --> CI[Local checks and GitHub Actions]

@@ -1,5 +1,11 @@
 # mknext
 
+## 1.4.2
+
+### Patch Changes
+
+- Show the project chart in the README and document migration and template parts.
+
 ## 1.4.1
 
 ### Patch Changes

@@ -4,6 +4,25 @@
 
 [Pele](https://pele.run/) renders the [diagram source](mknext-flow.mmd).
 
+## Template parts
+
+`create` starts with shadcn's Next.js app.
+It then copies these parts from `templates/`:
+
+- `app/`, `lib/`, `next.config.ts`, and `tsconfig.json` set app defaults.
+- Oxlint, Oxfmt, Vitest, React Doctor, and Knip configure checks.
+- `.husky/`, `.claude/`, `.codex/`, and `.gitleaks.toml` add guards.
+- `.github/` adds CI, pull request checks, and security jobs.
+- `scripts/` adds Git hooks and the branch protection command.
+- `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md`, and `docs/` guide work.
+- `pnpm-workspace.yaml` and `.changeset/` set package and release rules.
+
+`lib/update-package.mjs` writes pinned dependencies and package scripts.
+`sync` refreshes mknext-owned templates in a generated app.
+`--migrate` uses `lib/migrate-package.mjs` instead of these templates.
+It replaces ESLint and Prettier settings in an existing app.
+It backs up changed files and keeps application source files.
+
 ## Folder layout
 
 ```text

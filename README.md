@@ -4,6 +4,10 @@
 It creates a Next.js app with a fixed tool set.
 It also checks an existing mknext app.
 
+![mknext commands and generated app templates](docs/mknext-flow.svg)
+
+[Pele](https://pele.run/) renders the [diagram source](docs/mknext-flow.mmd).
+
 ## Tool set
 
 A generated app uses:
