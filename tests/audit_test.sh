@@ -187,7 +187,7 @@ JS
   printf '{"model":"my-custom-model","customSetting":true,"permissions":{"deny":["Read(**/.env.production.local)","Read(**/.env.prod.local)","Read(**/production.local.env)","Read(**/prod.local.env)"]},"sandbox":{"filesystem":{"denyRead":["./**/.env.production.local","./**/.env.prod.local","./**/production.local.env","./**/prod.local.env"]}}}\n' >.claude/settings.local.json
   cp .claude/settings.local.json .claude/settings.local.json.before
   command() {
-    if [[ ${1:-} == -v && ${2:-} == socat ]]; then
+    if [[ ${1:-} == -v && ${2:-} == jq ]]; then
       return 1
     fi
     builtin command "$@"
