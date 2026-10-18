@@ -1,5 +1,12 @@
 # mknext
 
+## 1.4.1
+
+### Patch Changes
+
+- Fix macOS shell parsing in the generated Claude hook.
+  Test missing guard dependencies on Linux and macOS.
+
 ## 1.4.0
 
 ### Minor Changes
