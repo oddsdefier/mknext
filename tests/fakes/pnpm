@@ -13,6 +13,19 @@ if [[ "${1:-}" == '--version' ]]; then
   exit 0
 fi
 
+if [[ "${1:-}" == 'install' && "${MKNEXT_FAKE_PNPM_INSTALL_FAIL:-0}" == 1 ]]; then
+  printf 'dependency installation failed\n' >&2
+  exit 1
+fi
+
+if [[ "${1:-}" == 'exec' && "${2:-}" == 'oxfmt' && "${3:-}" == '--migrate=prettier' ]]; then
+  node --input-type=module <<'NODE'
+import { copyFile } from 'node:fs/promises';
+await copyFile('.prettierrc.json', '.oxfmtrc.json');
+NODE
+  exit 0
+fi
+
 if [[ "${1:-}" == 'install' && -n "${MKNEXT_EXPECT_PACKAGE_MANAGER:-}" ]]; then
   package_manager=$(node -p "require('./package.json').packageManager")
   if [[ "$package_manager" != "$MKNEXT_EXPECT_PACKAGE_MANAGER" ]]; then
@@ -93,6 +106,7 @@ if [[ "${1:-}" == 'exec' && "${2:-}" == 'oxfmt' && "${3:-}" == '--write' ]]; the
   if [[ "${MKNEXT_FAKE_OXFMT_FAIL:-0}" == 1 ]]; then
     exit 1
   fi
+  [[ "${4:-}" == '.' ]] || exit 0
   printf 'export default function Page() { return <main>Hello</main>; }\n' >app/page.tsx
   exit 0
 fi

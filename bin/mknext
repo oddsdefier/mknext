@@ -20,6 +20,7 @@ source "$ROOT_DIR/lib/commands/update.sh"
 source "$ROOT_DIR/lib/commands/sync.sh"
 source "$ROOT_DIR/lib/commands/audit.sh"
 source "$ROOT_DIR/lib/commands/uninstall.sh"
+source "$ROOT_DIR/lib/commands/migrate.sh"
 source "$ROOT_DIR/lib/claude-guard.sh"
 source "$ROOT_DIR/lib/codex-guard.sh"
 
@@ -32,7 +33,7 @@ done
 init_colors
 
 case "${1:-}" in
-  ''|--*|-h|create|ci|doctor|update|sync|audit|uninstall) ;;
+  ''|--*|-h|create|ci|doctor|update|sync|audit|uninstall|migrate) ;;
   *)
     # The short form is create. Confirm it, because a typo looks like a command.
     if [[ -t 0 && -t 1 && " ${*:2} " != *' --yes '* && " ${*:2} " != *' --quiet '* ]]; then
@@ -53,6 +54,7 @@ ${C_BOLD}${C_CYAN}▲ mknext${C_RESET} ${C_DIM}v$(<"$ROOT_DIR/VERSION")${C_RESET
 ${C_BOLD}USAGE${C_RESET}
   ${C_CYAN}mknext${C_RESET} ${C_DIM}<project-name>${C_RESET} [options]
   ${C_CYAN}mknext create${C_RESET} [--name <name>] [options]
+  ${C_CYAN}mknext --migrate${C_RESET} [--dry-run] [options]
   ${C_CYAN}mknext ci${C_RESET} [options]
   ${C_CYAN}mknext doctor${C_RESET} [options]
   ${C_CYAN}mknext audit${C_RESET} [options]
@@ -62,6 +64,7 @@ ${C_BOLD}USAGE${C_RESET}
 
 ${C_BOLD}COMMANDS${C_RESET}
   ${C_BOLD}create${C_RESET}       Scaffold a new Next.js app with shadcn, Tailwind, and quality tools
+  ${C_BOLD}migrate${C_RESET}      Replace ESLint and Prettier with Oxlint and Oxfmt
   ${C_BOLD}ci${C_RESET}           Run local or GitHub CI checks in parallel (lint, format, types, audit)
   ${C_BOLD}doctor${C_RESET}       Verify setup and update direct dependencies
   ${C_BOLD}audit${C_RESET}        Run automated security scans (secrets, CVEs, env, supply chain)
@@ -75,6 +78,7 @@ ${C_BOLD}OPTIONS${C_RESET}
   ${C_GREEN}--region${C_RESET} NAME    Set Vercel region (default: sin1)
   ${C_GREEN}--ci${C_RESET} TARGET      Select CI target (default: local)
   ${C_GREEN}--yes${C_RESET}            Accept default answers
+  ${C_GREEN}--migrate${C_RESET}        Migrate lint and format tools in the current project
   ${C_GREEN}--dry-run${C_RESET}        Print create steps without file changes
   ${C_GREEN}--force${C_RESET}          Reserved (does not replace targets in v1)
   ${C_GREEN}--no-color${C_RESET}       Turn off color output
@@ -141,6 +145,18 @@ case "${1:-}" in
       esac
     done
     run_doctor
+    ;;
+  --migrate|migrate)
+    shift
+    while (($#)); do
+      case "$1" in
+        --dry-run) MKNEXT_MIGRATE_DRY_RUN=1; shift ;;
+        --yes|-y|--no-color|--quiet) shift ;;
+        --help|-h) print_help; exit 0 ;;
+        *) log_error "unknown option: $1"; exit 2 ;;
+      esac
+    done
+    run_migrate
     ;;
   create)
     shift

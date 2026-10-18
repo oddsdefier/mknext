@@ -104,6 +104,26 @@ The longer `mknext create --name my-app --yes` form also works.
 
 The command stops if the target path exists.
 
+## Migrate an existing project
+
+Run this from the existing project's directory:
+
+```bash
+mknext --migrate --dry-run
+mknext --migrate
+```
+
+Migration replaces ESLint and Prettier dependencies with pinned Oxlint/Oxfmt.
+It preserves npm/pnpm selection and updates common package scripts.
+It preserves source files, ignore files, and supply-chain settings.
+Oxfmt converts existing Prettier settings.
+Existing Oxlint and Oxfmt configurations stay unchanged.
+Backups preserve replaced configs, package data, and lockfiles.
+Find them under `.mknext-migrate-backups/`.
+Migration restores project files after an installation failure.
+Review custom ESLint rules manually against the backed-up configuration.
+Migration does not automatically format or repair application code.
+
 ## Check an app
 
 Run these commands from the generated app:

@@ -14,6 +14,7 @@ It uses Bash and pnpm.
 | --- | --- |
 | `mknext PROJECT` | Creates a Next.js app. This is the main form. |
 | `create` | Creates a Next.js app. |
+| `--migrate` / `migrate` | Replaces existing ESLint and Prettier tooling. |
 | `ci` | Runs local app checks. |
 | `doctor` | Checks setup. `--update` updates direct dependencies. |
 | `sync` | Synchronizes project configuration, workflows, and pins with mknext templates. |
@@ -148,6 +149,30 @@ For `local`, it starts these checks in parallel:
 For `github`, it verifies `.github/workflows/ci.yml` is present and runs the full remote CI parity checks, including `pnpm run build`.
 
 It exits with code `1` when a check fails.
+
+## Migrate
+
+`mknext --migrate` operates on the current project's `package.json`.
+It does not require an `.mknext` marker.
+`mknext migrate` provides the same behavior.
+`--dry-run` previews migration without changes or installation.
+
+Migration installs pinned Oxlint, Oxfmt, and the anti-slop plugin.
+It preserves npm/pnpm selection and existing package-manager lockfiles.
+It removes ESLint/Prettier packages and root configuration files.
+It updates common lint/format scripts and inline lint-staged commands.
+It preserves unrelated scripts, application dependencies, source, and supply-chain settings.
+Existing successor configurations remain unchanged.
+Oxfmt converts existing Prettier configuration before its removal.
+Ignore files remain available to the successor tools.
+Custom ESLint rules need manual review against the replacement preset.
+
+Backups live under `.mknext-migrate-backups/`.
+They contain replaced manifests, lockfiles, and configuration files.
+Migration restores those files after an installation or conversion failure.
+Reinstall original dependencies if an interrupted installation changed `node_modules`.
+Migration rejects symbolic links in its managed paths.
+It never automatically formats application source.
 
 ## Sync
 
