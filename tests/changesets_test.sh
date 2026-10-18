@@ -18,7 +18,7 @@ const config = JSON.parse(fs.readFileSync(path.join(root, '.changeset/config.jso
 const version = fs.readFileSync(path.join(root, 'VERSION'), 'utf8').trim();
 
 if (packageData.version !== version) throw new Error('package.json and VERSION do not match');
-if (packageData.devDependencies['@changesets/cli'] !== '3.0.1') throw new Error('Changesets is not pinned');
+if (packageData.devDependencies['@changesets/cli'] !== '3.0.3') throw new Error('Changesets is not pinned');
 if (packageData.scripts.changeset !== 'changeset') throw new Error('changeset command is missing');
 if (packageData.scripts['changeset:version'] !== 'changeset version && node scripts/sync-version.mjs') {
   throw new Error('version command is missing');

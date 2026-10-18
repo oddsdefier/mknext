@@ -42,7 +42,7 @@ if (!complexityConfig.includes("from './oxlint.config.ts'")) {
 if (doctorConfig.includes("from 'react-doctor'")) {
   throw new Error('React Doctor config uses a missing run-time export');
 }
-if (packageData.devDependencies.knip !== '^6.34.0') throw new Error('Knip is not pinned');
+if (packageData.devDependencies.knip !== '6.41.0') throw new Error('Knip is not pinned');
 if (packageData.scripts.knip !== 'knip') throw new Error('Knip command is missing');
 if (oxfmtConfig.sortTailwindcss.stylesheet !== './app/globals.css') {
   throw new Error('Oxfmt does not use the Tailwind CSS v4 stylesheet');
@@ -50,13 +50,13 @@ if (oxfmtConfig.sortTailwindcss.stylesheet !== './app/globals.css') {
 if (JSON.stringify(oxfmtConfig.sortTailwindcss.functions) !== JSON.stringify(['cn', 'cva'])) {
   throw new Error('Oxfmt does not sort classes in project class helpers');
 }
-if (packageData.dependencies.cn !== '^0.2.4') throw new Error('cn is not pinned');
+if (packageData.dependencies.cn !== '0.4.0') throw new Error('cn is not pinned');
 for (const dependency of ['clsx', 'tailwind-merge']) {
   if (dependency in packageData.dependencies || dependency in packageData.devDependencies) {
     throw new Error(`${dependency} was not replaced by cn`);
   }
 }
-if (packageData.devDependencies['react-grab'] !== '^0.2.0') {
+if (packageData.devDependencies['react-grab'] !== '0.2.0') {
   throw new Error('React Grab is not a pinned dev dependency');
 }
 if (utils !== "export { cn } from 'cn';\n") throw new Error('the cn utility does not use the cn package');
