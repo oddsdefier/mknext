@@ -1,5 +1,20 @@
 # mknext
 
+## 1.3.0
+
+### Minor Changes
+
+- Add `mknext --migrate` for existing npm and pnpm projects.
+  Preserve source files and convert existing Prettier preferences.
+  Support previews, configuration backups, rollback, and safe repeat runs.
+
+### Patch Changes
+
+- Eject shadcn styles to remove the vulnerable braces dependency chain.
+  Verify generated-app security, production builds, and React Doctor compatibility.
+- Update Next.js, React, pnpm, Oxlint, and the pinned tool stack.
+  Refresh shell-quote to remove its critical command-injection advisory.
+
 ## 1.2.0
 
 ### Minor Changes
