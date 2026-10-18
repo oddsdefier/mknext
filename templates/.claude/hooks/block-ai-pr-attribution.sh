@@ -43,21 +43,18 @@ case "$command" in
     fi
 
     # Resolve quoted body files. Reject shell-generated bodies we cannot inspect.
-    if body_file=$(PR_COMMAND="$command" node <<'NODE'
-const command = process.env.PR_COMMAND ?? '';
+    if body_file=$(PR_COMMAND="$command" node -e 'const command = process.env.PR_COMMAND ?? "";
 const dynamicBody = /(?:^|\s)(?:--body|-b)(?:=|\s+)[^\n]*[$\x60]/;
 if (dynamicBody.test(command) || /(?:^|\s)-[bF][^\s=]+/.test(command)) process.exit(2);
 const bodyFlags = [...command.matchAll(/(?:^|\s)(?:--body|-b|-F|--body-file)(?:=|\s+)/g)];
 if (bodyFlags.length > 1) process.exit(2);
 const bodyFileFlag = /(?:^|\s)(?:-F|--body-file)(?:=|\s+)/;
 if (!bodyFileFlag.test(command)) process.exit(0);
-const match = command.match(/(?:^|\s)(?:-F|--body-file)(?:=|\s+)(?:"([^"]+)"|'([^']+)'|([^\s]+))/);
+const match = command.match(/(?:^|\s)(?:-F|--body-file)(?:=|\s+)(?:"([^"]+)"|\x27([^\x27]+)\x27|([^\s]+))/);
 if (!match) process.exit(2);
 const file = match[1] ?? match[2] ?? match[3];
-if (file.startsWith('~') || !/^[A-Za-z0-9_./ -]+$/.test(file)) process.exit(2);
-process.stdout.write(file);
-NODE
-    ); then
+if (file.startsWith("~") || !/^[A-Za-z0-9_./ -]+$/.test(file)) process.exit(2);
+process.stdout.write(file);'); then
       :
     else
       jq -n '{
