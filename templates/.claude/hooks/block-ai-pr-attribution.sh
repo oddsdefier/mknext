@@ -45,7 +45,7 @@ case "$command" in
     # Resolve quoted body files. Reject shell-generated bodies we cannot inspect.
     if body_file=$(PR_COMMAND="$command" node <<'NODE'
 const command = process.env.PR_COMMAND ?? '';
-const dynamicBody = /(?:^|\s)(?:--body|-b)(?:=|\s+)[^\n]*[$`]/;
+const dynamicBody = /(?:^|\s)(?:--body|-b)(?:=|\s+)[^\n]*[$\x60]/;
 if (dynamicBody.test(command) || /(?:^|\s)-[bF][^\s=]+/.test(command)) process.exit(2);
 const bodyFlags = [...command.matchAll(/(?:^|\s)(?:--body|-b|-F|--body-file)(?:=|\s+)/g)];
 if (bodyFlags.length > 1) process.exit(2);
